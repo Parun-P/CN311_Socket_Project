@@ -350,27 +350,7 @@ public class GameClient extends Application {
             // Opponent board: hide unhit fish
             if (entity.isHit()) {
                 if (entity.isFish()) {
-                    if (entity.isSunk()) {
-                        // Show sunk fish with darker color
-                        switch (entity.getType()) {
-                            case FISH_2x1:
-                                cell.setFill(Color.SALMON);
-                                break;
-                            case FISH_3x1:
-                                cell.setFill(Color.YELLOW);
-                                break;
-                            case FISH_4x2:
-                                cell.setFill(Color.GREEN);
-                                break;
-                            case FISH_5x1:
-                                cell.setFill(Color.PINK);
-                                break;
-                            default:
-                                cell.setFill(Color.DARKRED);
-                        }
-                    } else {
-                        cell.setFill(Color.RED); // Hit but not sunk
-                    }
+                    cell.setFill(Color.RED); // Only current hit is marked red
                 } else {
                     cell.setFill(Color.DARKGRAY); // Miss
                 }
@@ -584,6 +564,7 @@ public class GameClient extends Application {
                 entity.hit();
 
                 if (result.equals("HIT") || result.equals("SINK")) {
+
                     // Updated: Set a temporary fishId for tracking connected cells
                     int tempFishId = 100 + row * Board.SIZE + col; // Generate unique ID
                     entity.setType(Entity.Type.FISH_2x1); // Default, since we don't know actual type
@@ -594,6 +575,9 @@ public class GameClient extends Application {
                     entity.setSunk(true);
                     // Now when we mark adjacent cells, we'll use this tempFishId
                     markAdjacentCellsAsSunk(row, col, false);
+
+                    // Additional alert for sinking a fish
+                    showAlert("Fish Sunk!", "You sunk an opponent's fish!");
 
                     // Decrement opponent's fish count
                     opponentRemainingFish--;
@@ -608,6 +592,9 @@ public class GameClient extends Application {
 
                 if (result.equals("SINK")) {
                     markAllCellsOfFishAsSunk(entity.getFishId());
+
+                    // Notify the player that their fish was sunk
+                    showAlert("Fish Lost!", "Your opponent sunk one of your fish!");
                 }
 
                 updateCell(true, row, col, entity);
