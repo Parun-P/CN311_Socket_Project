@@ -45,6 +45,9 @@ public class GameClient extends Application {
     private Entity.Type lastPlacementType;
     private boolean lastPlacementHorizontal;
 
+    // Track opponent's fish count
+    private int opponentRemainingFish = 6;
+
     // Networking
     private Socket socket;
     private BufferedReader in;
@@ -84,7 +87,7 @@ public class GameClient extends Application {
         statusText = new Text("Place your fish on the left board");
         statusText.setFont(Font.font(18));
 
-        remainingFishText = new Text("Opponent fish remaining: 6");
+        remainingFishText = new Text("Opponent fish remaining: " + opponentRemainingFish);
         remainingFishText.setFont(Font.font(14));
 
         topSection.getChildren().addAll(statusText, remainingFishText);
@@ -183,10 +186,17 @@ public class GameClient extends Application {
         controlsContainer.getChildren().addAll(fishTypeContainer, orientationContainer, readyButton);
         root.setBottom(controlsContainer);
 
-        // Create scene
-        Scene scene = new Scene(root, 800, 600);
+        // Create scene - Make it responsive to window resizing
+        Scene scene = new Scene(root);
         primaryStage.setTitle("Fish Battle - Player " + playerId);
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(800);
+        primaryStage.setMinHeight(600);
+
+        // Make the boards resize with the window
+        boardsContainer.prefWidthProperty().bind(scene.widthProperty().subtract(40));
+        boardsContainer.prefHeightProperty().bind(scene.heightProperty().subtract(200));
+
         primaryStage.setOnCloseRequest(e -> {
             try {
                 if (socket != null && !socket.isClosed()) {
@@ -281,6 +291,12 @@ public class GameClient extends Application {
      * @param col Column index
      */
     private void attackCell(int row, int col) {
+        // Check if cell was already hit
+        if (opponentBoard.getEntity(row, col).isHit()) {
+            statusText.setText("You already attacked this position!");
+            return;
+        }
+
         // Send attack command to server
         out.println("ATTACK " + row + " " + col);
         myTurn = false; // Disable further attacks until turn comes back
@@ -302,7 +318,11 @@ public class GameClient extends Application {
             // My board: show fish
             if (entity.isFish()) {
                 if (entity.isHit()) {
-                    cell.setFill(Color.RED); // Hit
+                    if (entity.isSunk()) {
+                        cell.setFill(Color.DARKRED); // Sunk
+                    } else {
+                        cell.setFill(Color.RED); // Hit
+                    }
                 } else {
                     switch (entity.getType()) {
                         case FISH_2x1:
@@ -331,22 +351,22 @@ public class GameClient extends Application {
             if (entity.isHit()) {
                 if (entity.isFish()) {
                     if (entity.isSunk()) {
-                        // Show sunk fish
+                        // Show sunk fish with darker color
                         switch (entity.getType()) {
                             case FISH_2x1:
-                                cell.setFill(Color.LIGHTSALMON);
+                                cell.setFill(Color.SALMON);
                                 break;
                             case FISH_3x1:
-                                cell.setFill(Color.LIGHTYELLOW);
+                                cell.setFill(Color.YELLOW);
                                 break;
                             case FISH_4x2:
-                                cell.setFill(Color.LIGHTGREEN);
+                                cell.setFill(Color.GREEN);
                                 break;
                             case FISH_5x1:
-                                cell.setFill(Color.LIGHTPINK);
+                                cell.setFill(Color.PINK);
                                 break;
                             default:
-                                cell.setFill(Color.LIGHTBLUE);
+                                cell.setFill(Color.DARKRED);
                         }
                     } else {
                         cell.setFill(Color.RED); // Hit but not sunk
@@ -516,7 +536,7 @@ public class GameClient extends Application {
             }
 
             // Update our local board to reflect the placed fish
-            int fishId = myBoard.getNextFishId(); // We need to add this method to Board class
+            int fishId = myBoard.getNextFishId();
             for (int r = lastPlacementRow; r < lastPlacementRow + height; r++) {
                 for (int c = lastPlacementCol; c < lastPlacementCol + width; c++) {
                     Entity entity = myBoard.getEntity(r, c);
@@ -524,7 +544,7 @@ public class GameClient extends Application {
                     entity.setFishId(fishId);
                 }
             }
-            myBoard.incrementTotalFish(); // We need to add this method to Board class
+            myBoard.incrementTotalFish();
 
             updateFishCount(selectedType, true);
             refreshBoard(true);
@@ -564,7 +584,10 @@ public class GameClient extends Application {
                 if (result.equals("SINK")) {
                     entity.setSunk(true);
                     markAdjacentCellsAsSunk(row, col, false);
-                    remainingFishText.setText("Opponent fish remaining: " + opponentBoard.getRemainingFish());
+
+                    // Decrement opponent's fish count
+                    opponentRemainingFish--;
+                    remainingFishText.setText("Opponent fish remaining: " + opponentRemainingFish);
                 }
 
                 updateCell(false, row, col, entity);
@@ -583,6 +606,10 @@ public class GameClient extends Application {
             // Game over notification
             int winnerId = Integer.parseInt(message.split(" ")[1]);
             boolean isWinner = (winnerId == playerId);
+
+            // Show a more prominent game over message
+            showGameOverDialog(isWinner);
+
             statusText.setText(isWinner ? "You win!" : "You lose!");
 
             // Disable further interaction
@@ -591,9 +618,43 @@ public class GameClient extends Application {
         } else if (message.equals("OPPONENT_DISCONNECTED")) {
             // Opponent disconnected
             statusText.setText("Opponent disconnected. Game over!");
+            showAlert("Game Over", "Your opponent has disconnected from the game.");
             gameStarted = false;
             myTurn = false;
         }
+    }
+
+    /**
+     * Show game over dialog with win/lose message
+     * 
+     * @param isWinner true if player won, false if player lost
+     */
+    private void showGameOverDialog(boolean isWinner) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText(null);
+
+        if (isWinner) {
+            alert.setContentText("Congratulations! You sunk all opponent's fish and won the game!");
+        } else {
+            alert.setContentText("Game over! Your opponent sunk all your fish.");
+        }
+
+        alert.showAndWait();
+    }
+
+    /**
+     * Show alert dialog
+     * 
+     * @param title   Dialog title
+     * @param message Message to display
+     */
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     /**
