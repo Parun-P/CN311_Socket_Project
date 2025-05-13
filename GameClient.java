@@ -326,16 +326,16 @@ public class GameClient extends Application {
                 } else {
                     switch (entity.getType()) {
                         case FISH_2x1:
-                            cell.setFill(Color.LIGHTSALMON);
+                            cell.setFill(Color.LIGHTGREEN);
                             break;
                         case FISH_3x1:
-                            cell.setFill(Color.LIGHTYELLOW);
+                            cell.setFill(Color.LIGHTGREEN);
                             break;
                         case FISH_4x2:
                             cell.setFill(Color.LIGHTGREEN);
                             break;
                         case FISH_5x1:
-                            cell.setFill(Color.LIGHTPINK);
+                            cell.setFill(Color.LIGHTGREEN);
                             break;
                         default:
                             cell.setFill(Color.LIGHTBLUE);
