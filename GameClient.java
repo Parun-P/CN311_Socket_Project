@@ -188,7 +188,7 @@ public class GameClient extends Application {
 
         // Create scene - Make it responsive to window resizing
         Scene scene = new Scene(root);
-        primaryStage.setTitle("Fish Battle - Player " + playerId);
+        primaryStage.setTitle("Fish Battle - Connecting...");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
@@ -507,6 +507,12 @@ public class GameClient extends Application {
             // Set player ID
             playerId = Integer.parseInt(message.split(" ")[1]);
             System.out.println("Assigned player ID: " + playerId);
+
+            // Update the window title with the correct player ID
+            Platform.runLater(() -> {
+                Stage stage = (Stage) myBoardGrid.getScene().getWindow();
+                stage.setTitle("Fish Battle - Player " + playerId);
+            });
         } else if (message.equals("FISH_PLACED")) {
             // Fish placement successful
             Entity.Type selectedType = lastPlacementType;
