@@ -56,7 +56,7 @@ public class GameClient extends Application {
     private static final int PORT = 8080;
 
     // Cell display constants
-    private static final int CELL_SIZE = 40;
+    private static final int CELL_SIZE = 25;
 
     @Override
     public void start(Stage primaryStage) {
@@ -578,11 +578,15 @@ public class GameClient extends Application {
                 entity.hit();
 
                 if (result.equals("HIT") || result.equals("SINK")) {
+                    // Updated: Set a temporary fishId for tracking connected cells
+                    int tempFishId = 100 + row * Board.SIZE + col; // Generate unique ID
                     entity.setType(Entity.Type.FISH_2x1); // Default, since we don't know actual type
+                    entity.setFishId(tempFishId); // Set temporary fish ID
                 }
 
                 if (result.equals("SINK")) {
                     entity.setSunk(true);
+                    // Now when we mark adjacent cells, we'll use this tempFishId
                     markAdjacentCellsAsSunk(row, col, false);
 
                     // Decrement opponent's fish count
@@ -683,6 +687,11 @@ public class GameClient extends Application {
     private void markAdjacentCellsAsSunk(int row, int col, boolean isMyBoard) {
         Board board = isMyBoard ? myBoard : opponentBoard;
         Entity entity = board.getEntity(row, col);
+        int fishId = entity.getFishId();
+
+        // Only continue if this is a valid fish cell
+        if (!entity.isFish() || fishId <= 0)
+            return;
 
         // Check all directions for hit cells and mark them as sunk
         int[][] directions = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
@@ -693,7 +702,11 @@ public class GameClient extends Application {
 
             if (board.isValidCoordinate(newRow, newCol)) {
                 Entity adjacent = board.getEntity(newRow, newCol);
-                if (adjacent.isHit() && adjacent.isFish() && !adjacent.isSunk()) {
+                // Only mark as sunk if it's the same fish (same fishId)
+                if (adjacent.isHit() && adjacent.isFish() && !adjacent.isSunk() &&
+                // For opponent board, we don't know fishId so we just check if it's hit
+                        (isMyBoard ? adjacent.getFishId() == fishId : true)) {
+
                     adjacent.setSunk(true);
                     updateCell(isMyBoard, newRow, newCol, adjacent);
                     // Recursively mark connected cells
