@@ -1,5 +1,5 @@
 /**
- * Represents an entity on the game board (empty water or fish part).
+ * Represents an entity on the game board (empty space or block part).
  */
 public class Entity {
     /**
@@ -7,16 +7,16 @@ public class Entity {
      */
     public enum Type {
         EMPTY,
-        FISH_2x1,
-        FISH_3x1,
-        FISH_4x2,
-        FISH_5x1
+        BLOCK_2x1, // Was FISH_2x1
+        BLOCK_3x1, // Was FISH_3x1
+        BLOCK_4x2, // Was FISH_4x2
+        BLOCK_5x1 // Was FISH_5x1
     }
 
-    private Type type; // Type of entity (empty or fish type)
+    private Type type; // Type of entity (empty or block type)
     private boolean isHit; // Whether this cell has been hit
-    private int fishId; // ID of the fish this entity belongs to
-    private boolean isSunk; // Whether the fish is completely sunk
+    private int blockId; // ID of the block this entity belongs to (was fishId)
+    private boolean isSunk; // Whether the block is completely sunk
 
     /**
      * Create a new entity (initially empty)
@@ -24,7 +24,7 @@ public class Entity {
     public Entity() {
         this.type = Type.EMPTY;
         this.isHit = false;
-        this.fishId = -1;
+        this.blockId = -1; // Was fishId
         this.isSunk = false;
     }
 
@@ -58,7 +58,7 @@ public class Entity {
     /**
      * Mark this entity as hit
      * 
-     * @return true if a fish was hit, false if empty cell
+     * @return true if a block was hit, false if empty cell
      */
     public boolean hit() {
         this.isHit = true;
@@ -66,48 +66,48 @@ public class Entity {
     }
 
     /**
-     * Check if this entity is part of a fish
+     * Check if this entity is part of a block
      * 
-     * @return true if entity is a fish part, false otherwise
+     * @return true if entity is a block part, false otherwise
      */
-    public boolean isFish() {
+    public boolean isBlock() { // Was isFish
         return type != Type.EMPTY;
     }
 
     /**
-     * Set whether this fish entity is sunk
+     * Set whether this block entity is sunk
      * 
-     * @param sunk true if the fish is completely sunk
+     * @param sunk true if the block is completely sunk
      */
     public void setSunk(boolean sunk) {
         this.isSunk = sunk;
     }
 
     /**
-     * Check if this entity is part of a sunk fish
+     * Check if this entity is part of a sunk block
      * 
-     * @return true if entity is part of a completely sunk fish
+     * @return true if entity is part of a completely sunk block
      */
     public boolean isSunk() {
         return isSunk;
     }
 
     /**
-     * Set the fish ID for this entity
+     * Set the block ID for this entity
      * 
-     * @param id The fish ID this entity belongs to
+     * @param id The block ID this entity belongs to
      */
-    public void setFishId(int id) {
-        this.fishId = id;
+    public void setBlockId(int id) { // Was setFishId
+        this.blockId = id;
     }
 
     /**
-     * Get the fish ID this entity belongs to
+     * Get the block ID this entity belongs to
      * 
-     * @return The fish ID
+     * @return The block ID
      */
-    public int getFishId() {
-        return fishId;
+    public int getBlockId() { // Was getFishId
+        return blockId;
     }
 
     /**
@@ -116,7 +116,7 @@ public class Entity {
     public void reset() {
         this.type = Type.EMPTY;
         this.isHit = false;
-        this.fishId = -1;
+        this.blockId = -1; // Was fishId
         this.isSunk = false;
     }
 }

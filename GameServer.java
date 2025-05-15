@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Server for the Fish Battle game.
+ * Server for the Block Battle game.
  * Manages connections and game flow between two clients.
  */
 public class GameServer {
@@ -43,7 +43,7 @@ public class GameServer {
             pool = Executors.newFixedThreadPool(2);
             gameState = new GameState();
 
-            System.out.println("Fish Battle Server started on port " + PORT);
+            System.out.println("Block Battle Server started on port " + PORT);
             System.out.println("Waiting for players to connect...");
 
             // Wait for two players to connect
@@ -125,8 +125,8 @@ public class GameServer {
         private void handleCommand(String command) {
             System.out.println("Player " + playerId + " sent: " + command);
 
-            if (command.startsWith("PLACE_FISH")) {
-                // Format: PLACE_FISH row col type orientation
+            if (command.startsWith("PLACE_BLOCK")) { // Was PLACE_FISH
+                // Format: PLACE_BLOCK row col type orientation
                 String[] parts = command.split(" ");
                 if (parts.length == 5) {
                     int row = Integer.parseInt(parts[1]);
@@ -134,8 +134,8 @@ public class GameServer {
                     Entity.Type type = Entity.Type.valueOf(parts[3]);
                     boolean horizontal = Boolean.parseBoolean(parts[4]);
 
-                    boolean placed = gameState.boards[playerId].placeFish(row, col, type, horizontal);
-                    out.println(placed ? "FISH_PLACED" : "INVALID_PLACEMENT");
+                    boolean placed = gameState.boards[playerId].placeBlock(row, col, type, horizontal); // Was placeFish
+                    out.println(placed ? "BLOCK_PLACED" : "INVALID_PLACEMENT"); // Was FISH_PLACED
                 }
             } else if (command.equals("READY")) {
                 gameState.playersReady[playerId] = true;
@@ -164,7 +164,7 @@ public class GameServer {
                         broadcastToAll("ATTACK_RESULT " + playerId + " " + row + " " + col + " " + resultType);
 
                         // Check win condition
-                        if (gameState.boards[opponentId].allFishSunk()) {
+                        if (gameState.boards[opponentId].allBlocksSunk()) { // Was allFishSunk
                             gameState.gameOver = true;
                             broadcastToAll("GAME_OVER " + playerId);
                         } else {

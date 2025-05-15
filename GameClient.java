@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Client application for the Fish Battle game.
+ * Client application for the Block Battle game.
  * Provides GUI and handles communication with the server.
  */
 public class GameClient extends Application {
@@ -25,10 +25,10 @@ public class GameClient extends Application {
     private GridPane myBoardGrid;
     private GridPane opponentBoardGrid;
     private Button readyButton;
-    private ToggleGroup fishTypeGroup;
+    private ToggleGroup blockTypeGroup; // Was fishTypeGroup
     private ToggleGroup orientationGroup;
     private Text statusText;
-    private Text remainingFishText;
+    private Text remainingBlocksText; // Was remainingFishText
 
     // Game state
     private Board myBoard;
@@ -37,7 +37,7 @@ public class GameClient extends Application {
     private boolean myTurn;
     private boolean gameStarted;
     private boolean placementPhase;
-    private Map<Entity.Type, Integer> fishCounts;
+    private Map<Entity.Type, Integer> blockCounts; // Was fishCounts
 
     // Remember last placement attempt
     private int lastPlacementRow;
@@ -45,8 +45,8 @@ public class GameClient extends Application {
     private Entity.Type lastPlacementType;
     private boolean lastPlacementHorizontal;
 
-    // Track opponent's fish count
-    private int opponentRemainingFish = 6;
+    // Track opponent's block count
+    private int opponentRemainingBlocks = 6; // Was opponentRemainingFish
 
     // Networking
     private Socket socket;
@@ -66,12 +66,12 @@ public class GameClient extends Application {
         gameStarted = false;
         myTurn = false;
 
-        // Initialize available fish counts
-        fishCounts = new HashMap<>();
-        fishCounts.put(Entity.Type.FISH_2x1, 2); // 2 fish of size 2x1
-        fishCounts.put(Entity.Type.FISH_3x1, 2); // 2 fish of size 3x1
-        fishCounts.put(Entity.Type.FISH_4x2, 1); // 1 fish of size 4x2
-        fishCounts.put(Entity.Type.FISH_5x1, 1); // 1 fish of size 5x1
+        // Initialize available block counts
+        blockCounts = new HashMap<>();
+        blockCounts.put(Entity.Type.BLOCK_2x1, 2); // 2 blocks of size 2x1
+        blockCounts.put(Entity.Type.BLOCK_3x1, 2); // 2 blocks of size 3x1
+        blockCounts.put(Entity.Type.BLOCK_4x2, 1); // 1 block of size 4x2
+        blockCounts.put(Entity.Type.BLOCK_5x1, 1); // 1 block of size 5x1
 
         // Connect to server
         connectToServer();
@@ -84,13 +84,13 @@ public class GameClient extends Application {
         VBox topSection = new VBox(10);
         topSection.setAlignment(Pos.CENTER);
 
-        statusText = new Text("Place your fish on the left board");
+        statusText = new Text("Place your blocks on the left board");
         statusText.setFont(Font.font(18));
 
-        remainingFishText = new Text("Opponent fish remaining: " + opponentRemainingFish);
-        remainingFishText.setFont(Font.font(14));
+        remainingBlocksText = new Text("Opponent blocks remaining: " + opponentRemainingBlocks);
+        remainingBlocksText.setFont(Font.font(14));
 
-        topSection.getChildren().addAll(statusText, remainingFishText);
+        topSection.getChildren().addAll(statusText, remainingBlocksText);
         root.setTop(topSection);
 
         // Center section - Game boards
@@ -127,32 +127,32 @@ public class GameClient extends Application {
         controlsContainer.setAlignment(Pos.CENTER);
         controlsContainer.setPadding(new Insets(20, 0, 0, 0));
 
-        // Fish type selection
-        HBox fishTypeContainer = new HBox(10);
-        fishTypeContainer.setAlignment(Pos.CENTER);
+        // Block type selection
+        HBox blockTypeContainer = new HBox(10);
+        blockTypeContainer.setAlignment(Pos.CENTER);
 
-        Text fishTypeLabel = new Text("Fish Type:");
-        fishTypeGroup = new ToggleGroup();
+        Text blockTypeLabel = new Text("Block Type:");
+        blockTypeGroup = new ToggleGroup();
 
-        RadioButton fish2x1Button = new RadioButton("2x1 (" + fishCounts.get(Entity.Type.FISH_2x1) + ")");
-        fish2x1Button.setToggleGroup(fishTypeGroup);
-        fish2x1Button.setUserData(Entity.Type.FISH_2x1);
-        fish2x1Button.setSelected(true);
+        RadioButton block2x1Button = new RadioButton("2x1 (" + blockCounts.get(Entity.Type.BLOCK_2x1) + ")");
+        block2x1Button.setToggleGroup(blockTypeGroup);
+        block2x1Button.setUserData(Entity.Type.BLOCK_2x1);
+        block2x1Button.setSelected(true);
 
-        RadioButton fish3x1Button = new RadioButton("3x1 (" + fishCounts.get(Entity.Type.FISH_3x1) + ")");
-        fish3x1Button.setToggleGroup(fishTypeGroup);
-        fish3x1Button.setUserData(Entity.Type.FISH_3x1);
+        RadioButton block3x1Button = new RadioButton("3x1 (" + blockCounts.get(Entity.Type.BLOCK_3x1) + ")");
+        block3x1Button.setToggleGroup(blockTypeGroup);
+        block3x1Button.setUserData(Entity.Type.BLOCK_3x1);
 
-        RadioButton fish4x2Button = new RadioButton("4x2 (" + fishCounts.get(Entity.Type.FISH_4x2) + ")");
-        fish4x2Button.setToggleGroup(fishTypeGroup);
-        fish4x2Button.setUserData(Entity.Type.FISH_4x2);
+        RadioButton block4x2Button = new RadioButton("4x2 (" + blockCounts.get(Entity.Type.BLOCK_4x2) + ")");
+        block4x2Button.setToggleGroup(blockTypeGroup);
+        block4x2Button.setUserData(Entity.Type.BLOCK_4x2);
 
-        RadioButton fish5x1Button = new RadioButton("5x1 (" + fishCounts.get(Entity.Type.FISH_5x1) + ")");
-        fish5x1Button.setToggleGroup(fishTypeGroup);
-        fish5x1Button.setUserData(Entity.Type.FISH_5x1);
+        RadioButton block5x1Button = new RadioButton("5x1 (" + blockCounts.get(Entity.Type.BLOCK_5x1) + ")");
+        block5x1Button.setToggleGroup(blockTypeGroup);
+        block5x1Button.setUserData(Entity.Type.BLOCK_5x1);
 
-        fishTypeContainer.getChildren().addAll(
-                fishTypeLabel, fish2x1Button, fish3x1Button, fish4x2Button, fish5x1Button);
+        blockTypeContainer.getChildren().addAll(
+                blockTypeLabel, block2x1Button, block3x1Button, block4x2Button, block5x1Button);
 
         // Orientation selection
         HBox orientationContainer = new HBox(10);
@@ -183,12 +183,12 @@ public class GameClient extends Application {
             }
         });
 
-        controlsContainer.getChildren().addAll(fishTypeContainer, orientationContainer, readyButton);
+        controlsContainer.getChildren().addAll(blockTypeContainer, orientationContainer, readyButton);
         root.setBottom(controlsContainer);
 
         // Create scene - Make it responsive to window resizing
         Scene scene = new Scene(root);
-        primaryStage.setTitle("Fish Battle - Connecting...");
+        primaryStage.setTitle("Block Battle - Connecting...");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
@@ -236,10 +236,10 @@ public class GameClient extends Application {
                 final int c = col;
 
                 if (isMyBoard) {
-                    // For my board: place fish during setup
+                    // For my board: place blocks during setup
                     cell.setOnMouseClicked(e -> {
                         if (placementPhase) {
-                            placeFish(r, c);
+                            placeBlock(r, c); // Was placeFish
                         }
                     });
                 } else {
@@ -259,18 +259,18 @@ public class GameClient extends Application {
     }
 
     /**
-     * Place a fish on the board
+     * Place a block on the board
      * 
      * @param row Row index
      * @param col Column index
      */
-    private void placeFish(int row, int col) {
-        Entity.Type selectedType = (Entity.Type) fishTypeGroup.getSelectedToggle().getUserData();
+    private void placeBlock(int row, int col) { // Was placeFish
+        Entity.Type selectedType = (Entity.Type) blockTypeGroup.getSelectedToggle().getUserData();
         Boolean horizontal = (Boolean) orientationGroup.getSelectedToggle().getUserData();
 
-        // Check if we have any fish of this type left
-        if (fishCounts.get(selectedType) <= 0) {
-            statusText.setText("No more fish of this type available");
+        // Check if we have any blocks of this type left
+        if (blockCounts.get(selectedType) <= 0) {
+            statusText.setText("No more blocks of this type available");
             return;
         }
 
@@ -281,7 +281,7 @@ public class GameClient extends Application {
         lastPlacementHorizontal = horizontal;
 
         // Send placement command to server
-        out.println("PLACE_FISH " + row + " " + col + " " + selectedType + " " + horizontal);
+        out.println("PLACE_BLOCK " + row + " " + col + " " + selectedType + " " + horizontal); // Was PLACE_FISH
     }
 
     /**
@@ -315,8 +315,8 @@ public class GameClient extends Application {
         Rectangle cell = (Rectangle) grid.getChildren().get(row * Board.SIZE + col);
 
         if (isMyBoard) {
-            // My board: show fish
-            if (entity.isFish()) {
+            // My board: show blocks
+            if (entity.isBlock()) { // Was isFish
                 if (entity.isHit()) {
                     if (entity.isSunk()) {
                         cell.setFill(Color.DARKRED); // Sunk
@@ -325,16 +325,16 @@ public class GameClient extends Application {
                     }
                 } else {
                     switch (entity.getType()) {
-                        case FISH_2x1:
+                        case BLOCK_2x1: // Was FISH_2x1
                             cell.setFill(Color.LIGHTGREEN);
                             break;
-                        case FISH_3x1:
+                        case BLOCK_3x1: // Was FISH_3x1
                             cell.setFill(Color.LIGHTGREEN);
                             break;
-                        case FISH_4x2:
+                        case BLOCK_4x2: // Was FISH_4x2
                             cell.setFill(Color.LIGHTGREEN);
                             break;
-                        case FISH_5x1:
+                        case BLOCK_5x1: // Was FISH_5x1
                             cell.setFill(Color.LIGHTGREEN);
                             break;
                         default:
@@ -347,9 +347,9 @@ public class GameClient extends Application {
                 cell.setFill(Color.LIGHTBLUE); // Empty water
             }
         } else {
-            // Opponent board: hide unhit fish
+            // Opponent board: hide unhit blocks
             if (entity.isHit()) {
-                if (entity.isFish()) {
+                if (entity.isBlock()) { // Was isFish
                     cell.setFill(Color.RED); // Only current hit is marked red
                 } else {
                     cell.setFill(Color.DARKGRAY); // Miss
@@ -397,7 +397,7 @@ public class GameClient extends Application {
      */
     private void disablePlacementControls() {
         readyButton.setDisable(true);
-        for (Toggle toggle : fishTypeGroup.getToggles()) {
+        for (Toggle toggle : blockTypeGroup.getToggles()) { // Was fishTypeGroup
             ((RadioButton) toggle).setDisable(true);
         }
         for (Toggle toggle : orientationGroup.getToggles()) {
@@ -406,51 +406,51 @@ public class GameClient extends Application {
     }
 
     /**
-     * Update fish count UI
+     * Update block count UI
      * 
-     * @param type     Fish type
+     * @param type     Block type
      * @param decrease true to decrease count, false to increase
      */
-    private void updateFishCount(Entity.Type type, boolean decrease) {
+    private void updateBlockCount(Entity.Type type, boolean decrease) { // Was updateFishCount
         if (decrease) {
-            fishCounts.put(type, fishCounts.get(type) - 1);
+            blockCounts.put(type, blockCounts.get(type) - 1); // Was fishCounts
         } else {
-            fishCounts.put(type, fishCounts.get(type) + 1);
+            blockCounts.put(type, blockCounts.get(type) + 1);
         }
 
         // Update radio button text
-        for (Toggle toggle : fishTypeGroup.getToggles()) {
+        for (Toggle toggle : blockTypeGroup.getToggles()) {
             RadioButton rb = (RadioButton) toggle;
             Entity.Type buttonType = (Entity.Type) rb.getUserData();
             if (buttonType == type) {
-                rb.setText(getTypeName(type) + " (" + fishCounts.get(type) + ")");
+                rb.setText(getTypeName(type) + " (" + blockCounts.get(type) + ")");
                 break;
             }
         }
 
-        // Enable/disable Ready button if all fish are placed
+        // Enable/disable Ready button if all blocks are placed
         int totalRemaining = 0;
-        for (Integer count : fishCounts.values()) {
+        for (Integer count : blockCounts.values()) {
             totalRemaining += count;
         }
         readyButton.setDisable(totalRemaining > 0);
     }
 
     /**
-     * Get display name for fish type
+     * Get display name for block type
      * 
-     * @param type Fish type
-     * @return String representation of fish type
+     * @param type Block type
+     * @return String representation of block type
      */
     private String getTypeName(Entity.Type type) {
         switch (type) {
-            case FISH_2x1:
+            case BLOCK_2x1: // Was FISH_2x1
                 return "2x1";
-            case FISH_3x1:
+            case BLOCK_3x1: // Was FISH_3x1
                 return "3x1";
-            case FISH_4x2:
+            case BLOCK_4x2: // Was FISH_4x2
                 return "4x2";
-            case FISH_5x1:
+            case BLOCK_5x1: // Was FISH_5x1
                 return "5x1";
             default:
                 return "Unknown";
@@ -491,53 +491,53 @@ public class GameClient extends Application {
             // Update the window title with the correct player ID
             Platform.runLater(() -> {
                 Stage stage = (Stage) myBoardGrid.getScene().getWindow();
-                stage.setTitle("Fish Battle - Player " + playerId);
+                stage.setTitle("Block Battle - Player " + playerId);
             });
-        } else if (message.equals("FISH_PLACED")) {
-            // Fish placement successful
+        } else if (message.equals("BLOCK_PLACED")) { // Was FISH_PLACED
+            // Block placement successful
             Entity.Type selectedType = lastPlacementType;
 
             // Update our local board since the server accepted the placement
             int width = 0;
             int height = 0;
 
-            // Calculate dimensions based on fish type and orientation
+            // Calculate dimensions based on block type and orientation
             switch (selectedType) {
-                case FISH_2x1:
+                case BLOCK_2x1: // Was FISH_2x1
                     width = lastPlacementHorizontal ? 2 : 1;
                     height = lastPlacementHorizontal ? 1 : 2;
                     break;
-                case FISH_3x1:
+                case BLOCK_3x1: // Was FISH_3x1
                     width = lastPlacementHorizontal ? 3 : 1;
                     height = lastPlacementHorizontal ? 1 : 3;
                     break;
-                case FISH_4x2:
+                case BLOCK_4x2: // Was FISH_4x2
                     width = lastPlacementHorizontal ? 4 : 2;
                     height = lastPlacementHorizontal ? 2 : 4;
                     break;
-                case FISH_5x1:
+                case BLOCK_5x1: // Was FISH_5x1
                     width = lastPlacementHorizontal ? 5 : 1;
                     height = lastPlacementHorizontal ? 1 : 5;
                     break;
             }
 
-            // Update our local board to reflect the placed fish
-            int fishId = myBoard.getNextFishId();
+            // Update our local board to reflect the placed block
+            int blockId = myBoard.getNextBlockId(); // Was getNextFishId
             for (int r = lastPlacementRow; r < lastPlacementRow + height; r++) {
                 for (int c = lastPlacementCol; c < lastPlacementCol + width; c++) {
                     Entity entity = myBoard.getEntity(r, c);
                     entity.setType(selectedType);
-                    entity.setFishId(fishId);
+                    entity.setBlockId(blockId); // Was setFishId
                 }
             }
-            myBoard.incrementTotalFish();
+            myBoard.incrementTotalBlocks(); // Was incrementTotalFish
 
-            updateFishCount(selectedType, true);
+            updateBlockCount(selectedType, true); // Was updateFishCount
             refreshBoard(true);
-            statusText.setText("Fish placed successfully!");
+            statusText.setText("Block placed successfully!"); // Was "Fish placed successfully!"
         } else if (message.equals("INVALID_PLACEMENT")) {
-            // Fish placement failed
-            statusText.setText("Invalid fish placement! Try again.");
+            // Block placement failed
+            statusText.setText("Invalid block placement! Try again."); // Was "Invalid fish placement! Try again."
         } else if (message.equals("GAME_START")) {
             // Game has started
             placementPhase = false;
@@ -564,24 +564,23 @@ public class GameClient extends Application {
                 entity.hit();
 
                 if (result.equals("HIT") || result.equals("SINK")) {
-
-                    // Updated: Set a temporary fishId for tracking connected cells
-                    int tempFishId = 100 + row * Board.SIZE + col; // Generate unique ID
-                    entity.setType(Entity.Type.FISH_2x1); // Default, since we don't know actual type
-                    entity.setFishId(tempFishId); // Set temporary fish ID
+                    // Updated: Set a temporary blockId for tracking connected cells
+                    int tempBlockId = 100 + row * Board.SIZE + col; // Generate unique ID
+                    entity.setType(Entity.Type.BLOCK_2x1); // Default, since we don't know actual type
+                    entity.setBlockId(tempBlockId); // Set temporary block ID
                 }
 
                 if (result.equals("SINK")) {
                     entity.setSunk(true);
-                    // Now when we mark adjacent cells, we'll use this tempFishId
+                    // Now when we mark adjacent cells, we'll use this tempBlockId
                     markAdjacentCellsAsSunk(row, col, false);
 
-                    // Additional alert for sinking a fish
-                    showAlert("Fish Sunk!", "You sunk an opponent's fish!");
+                    // Additional alert for sinking a block
+                    showAlert("Block Sunk!", "You sunk an opponent's block!");
 
-                    // Decrement opponent's fish count
-                    opponentRemainingFish--;
-                    remainingFishText.setText("Opponent fish remaining: " + opponentRemainingFish);
+                    // Decrement opponent's block count
+                    opponentRemainingBlocks--;
+                    remainingBlocksText.setText("Opponent blocks remaining: " + opponentRemainingBlocks);
                 }
 
                 updateCell(false, row, col, entity);
@@ -591,10 +590,10 @@ public class GameClient extends Application {
                 entity.hit();
 
                 if (result.equals("SINK")) {
-                    markAllCellsOfFishAsSunk(entity.getFishId());
+                    markAllCellsOfBlockAsSunk(entity.getBlockId()); // Was getFishId
 
-                    // Notify the player that their fish was sunk
-                    showAlert("Fish Lost!", "Your opponent sunk one of your fish!");
+                    // Notify the player that their block was sunk
+                    showAlert("Block Lost!", "Your opponent sunk one of your blocks!");
                 }
 
                 updateCell(true, row, col, entity);
@@ -632,9 +631,9 @@ public class GameClient extends Application {
         alert.setHeaderText(null);
 
         if (isWinner) {
-            alert.setContentText("Congratulations! You sunk all opponent's fish and won the game!");
+            alert.setContentText("Congratulations! You sunk all opponent's blocks and won the game!"); // Was "fish"
         } else {
-            alert.setContentText("Game over! Your opponent sunk all your fish.");
+            alert.setContentText("Game over! Your opponent sunk all your blocks."); // Was "fish"
         }
 
         alert.showAndWait();
@@ -671,7 +670,7 @@ public class GameClient extends Application {
     }
 
     /**
-     * Mark adjacent cells as part of a sunk fish
+     * Mark adjacent cells as part of a sunk block
      * 
      * @param row       Starting row
      * @param col       Starting column
@@ -680,10 +679,10 @@ public class GameClient extends Application {
     private void markAdjacentCellsAsSunk(int row, int col, boolean isMyBoard) {
         Board board = isMyBoard ? myBoard : opponentBoard;
         Entity entity = board.getEntity(row, col);
-        int fishId = entity.getFishId();
+        int blockId = entity.getBlockId(); // Was getFishId
 
-        // Only continue if this is a valid fish cell
-        if (!entity.isFish() || fishId <= 0)
+        // Only continue if this is a valid block cell
+        if (!entity.isBlock() || blockId <= 0) // Was isFish
             return;
 
         // Check all directions for hit cells and mark them as sunk
@@ -695,10 +694,10 @@ public class GameClient extends Application {
 
             if (board.isValidCoordinate(newRow, newCol)) {
                 Entity adjacent = board.getEntity(newRow, newCol);
-                // Only mark as sunk if it's the same fish (same fishId)
-                if (adjacent.isHit() && adjacent.isFish() && !adjacent.isSunk() &&
-                // For opponent board, we don't know fishId so we just check if it's hit
-                        (isMyBoard ? adjacent.getFishId() == fishId : true)) {
+                // Only mark as sunk if it's the same block (same blockId)
+                if (adjacent.isHit() && adjacent.isBlock() && !adjacent.isSunk() && // Was isFish
+                // For opponent board, we don't know blockId so we just check if it's hit
+                        (isMyBoard ? adjacent.getBlockId() == blockId : true)) { // Was getFishId
 
                     adjacent.setSunk(true);
                     updateCell(isMyBoard, newRow, newCol, adjacent);
@@ -710,15 +709,15 @@ public class GameClient extends Application {
     }
 
     /**
-     * Mark all cells of a fish as sunk
+     * Mark all cells of a block as sunk
      * 
-     * @param fishId The ID of the fish to mark as sunk
+     * @param blockId The ID of the block to mark as sunk
      */
-    private void markAllCellsOfFishAsSunk(int fishId) {
+    private void markAllCellsOfBlockAsSunk(int blockId) { // Was markAllCellsOfFishAsSunk
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Entity entity = myBoard.getEntity(row, col);
-                if (entity.getFishId() == fishId) {
+                if (entity.getBlockId() == blockId) { // Was getFishId
                     entity.setSunk(true);
                     updateCell(true, row, col, entity);
                 }
