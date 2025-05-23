@@ -317,11 +317,7 @@ public class GameClient extends Application {
             // My board: show blocks
             if (entity.isBlock()) {
                 if (entity.isHit()) {
-                    if (entity.isSunk()) {
-                        cell.setFill(Color.DARKRED); // Sunk
-                    } else {
-                        cell.setFill(Color.RED); // Hit
-                    }
+                    cell.setFill(Color.DARKRED); // Sunk
                 } else {
                     switch (entity.getType()) {
                         case BLOCK_2x1:
