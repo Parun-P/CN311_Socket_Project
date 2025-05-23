@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 public class GameServer {
     private static final int PORT = 8080;
     private ServerSocket serverSocket;
-    private ExecutorService pool;
+    private ExecutorService pool; // threadpool 2
     private Socket player1;
     private Socket player2;
     private GameState gameState;
@@ -74,14 +74,17 @@ public class GameServer {
             this.socket = socket;
             this.playerId = playerId;
             try {
-                this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                this.out = new PrintWriter(socket.getOutputStream(), true);
+                this.in = new BufferedReader(new InputStreamReader(socket.getInputStream())); // create BufferedReader
+                                                                                              // for write out mesage to
+                                                                                              // output stream of socket
+                this.out = new PrintWriter(socket.getOutputStream(), true); // sent data sudenly by dont wait until
+                                                                            // buffer is full
 
                 // Send player ID to client
-                out.println("PLAYER " + playerId);
+                out.println("PLAYER " + (playerId + 1)); // sent message to player 1 and 2
 
             } catch (IOException e) {
-                System.err.println("Error setting up player " + playerId + ": " + e.getMessage());
+                System.err.println("Error setting up player " + (playerId + 1) + ": " + e.getMessage());
             }
         }
 
@@ -93,7 +96,7 @@ public class GameServer {
                     handleCommand(inputLine);
                 }
             } catch (IOException e) {
-                System.err.println("Connection lost with player " + playerId + ": " + e.getMessage());
+                System.err.println("Connection lost with player " + (playerId + 1) + ": " + e.getMessage());
             } finally {
                 try {
                     socket.close();
@@ -102,7 +105,6 @@ public class GameServer {
                 }
 
                 // If a player disconnects, notify the other player
-                int otherPlayer = (playerId == 0) ? 1 : 0;
                 Socket otherSocket = (playerId == 0) ? player2 : player1;
                 if (otherSocket != null && !otherSocket.isClosed()) {
                     try {
@@ -113,7 +115,7 @@ public class GameServer {
                     }
                 }
 
-                System.out.println("Player " + playerId + " disconnected");
+                System.out.println("Player " + (playerId + 1) + " disconnected");
             }
         }
 
@@ -123,9 +125,9 @@ public class GameServer {
          * @param command The command string to process
          */
         private void handleCommand(String command) {
-            System.out.println("Player " + playerId + " sent: " + command);
+            System.out.println("Player " + (playerId + 1) + " sent: " + command);
 
-            if (command.startsWith("PLACE_BLOCK")) { // Was PLACE_FISH
+            if (command.startsWith("PLACE_BLOCK")) {
                 // Format: PLACE_BLOCK row col type orientation
                 String[] parts = command.split(" ");
                 if (parts.length == 5) {
@@ -134,8 +136,8 @@ public class GameServer {
                     Entity.Type type = Entity.Type.valueOf(parts[3]);
                     boolean horizontal = Boolean.parseBoolean(parts[4]);
 
-                    boolean placed = gameState.boards[playerId].placeBlock(row, col, type, horizontal); // Was placeFish
-                    out.println(placed ? "BLOCK_PLACED" : "INVALID_PLACEMENT"); // Was FISH_PLACED
+                    boolean placed = gameState.boards[playerId].placeBlock(row, col, type, horizontal); // place block
+                    out.println(placed ? "BLOCK_PLACED" : "INVALID_PLACEMENT");
                 }
             } else if (command.equals("READY")) {
                 gameState.playersReady[playerId] = true;
@@ -144,7 +146,7 @@ public class GameServer {
                 if (gameState.playersReady[0] && gameState.playersReady[1]) {
                     // Start the game with player 0
                     broadcastToAll("GAME_START");
-                    broadcastToAll("TURN 0");
+                    broadcastToAll("TURN 1");
                 }
             } else if (command.startsWith("ATTACK")) {
                 // Only allow attacks if it's this player's turn and game is not over
@@ -160,24 +162,22 @@ public class GameServer {
                         int result = gameState.boards[opponentId].applyAttack(row, col);
 
                         // Send result to both players
-                        String resultType = (result == 0) ? "MISS" : (result == 1) ? "HIT" : "SINK";
-                        broadcastToAll("ATTACK_RESULT " + playerId + " " + row + " " + col + " " + resultType);
+                        String resultType = (result == 0) ? "MISS" : (result == 1) ? "HIT" : "SINK"; // 0:MISS,1:HIT,2:SINK
+                        broadcastToAll("ATTACK_RESULT " + (playerId + 1) + " " + row + " " + col + " " + resultType);
 
                         // Check win condition
-                        if (gameState.boards[opponentId].allBlocksSunk()) { // Was allFishSunk
+                        if (gameState.boards[opponentId].allBlocksSunk()) {
                             gameState.gameOver = true;
-                            broadcastToAll("GAME_OVER " + playerId);
+                            broadcastToAll("GAME_OVER " + (playerId + 1));
                         } else {
                             // Switch turns
                             gameState.currentPlayer = opponentId;
-                            broadcastToAll("TURN " + gameState.currentPlayer);
+                            broadcastToAll("TURN " + (gameState.currentPlayer + 1));
                         }
                     }
                 } else {
                     out.println("NOT_YOUR_TURN");
                 }
-            } else if (command.equals("RESTART")) {
-                // Handle game restart logic if implemented
             }
         }
 

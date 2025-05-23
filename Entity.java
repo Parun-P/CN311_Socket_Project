@@ -7,15 +7,15 @@ public class Entity {
      */
     public enum Type {
         EMPTY,
-        BLOCK_2x1, // Was FISH_2x1
-        BLOCK_3x1, // Was FISH_3x1
-        BLOCK_4x2, // Was FISH_4x2
-        BLOCK_5x1 // Was FISH_5x1
+        BLOCK_2x1,
+        BLOCK_3x1,
+        BLOCK_4x2,
+        BLOCK_5x1
     }
 
     private Type type; // Type of entity (empty or block type)
     private boolean isHit; // Whether this cell has been hit
-    private int blockId; // ID of the block this entity belongs to (was fishId)
+    private int blockId; // ID of the block this entity belongs to
     private boolean isSunk; // Whether the block is completely sunk
 
     /**
@@ -24,7 +24,7 @@ public class Entity {
     public Entity() {
         this.type = Type.EMPTY;
         this.isHit = false;
-        this.blockId = -1; // Was fishId
+        this.blockId = -1;
         this.isSunk = false;
     }
 
@@ -70,7 +70,7 @@ public class Entity {
      * 
      * @return true if entity is a block part, false otherwise
      */
-    public boolean isBlock() { // Was isFish
+    public boolean isBlock() {
         return type != Type.EMPTY;
     }
 
@@ -97,7 +97,7 @@ public class Entity {
      * 
      * @param id The block ID this entity belongs to
      */
-    public void setBlockId(int id) { // Was setFishId
+    public void setBlockId(int id) {
         this.blockId = id;
     }
 
@@ -106,7 +106,7 @@ public class Entity {
      * 
      * @return The block ID
      */
-    public int getBlockId() { // Was getFishId
+    public int getBlockId() {
         return blockId;
     }
 
@@ -116,7 +116,7 @@ public class Entity {
     public void reset() {
         this.type = Type.EMPTY;
         this.isHit = false;
-        this.blockId = -1; // Was fishId
+        this.blockId = -1;
         this.isSunk = false;
     }
 }

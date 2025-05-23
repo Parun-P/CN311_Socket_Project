@@ -8,10 +8,10 @@ public class Board {
     public static final int SIZE = 10; // Board size (10x10)
 
     private Entity[][] grid; // 2D grid of entities
-    private List<int[][]> blockCoordinates; // List of coordinates for each block (was fishCoordinates)
-    private int nextBlockId; // Next available block ID (was nextFishId)
-    private int totalBlocks; // Total number of blocks on the board (was totalFish)
-    private int sunkBlocks; // Number of sunk blocks (was sunkFish)
+    private List<int[][]> blockCoordinates; // List of coordinates for each block
+    private int nextBlockId; // Next available block ID
+    private int totalBlocks; // Total number of blocks on the board
+    private int sunkBlocks; // Number of sunk blocks
 
     /**
      * Create a new empty board
@@ -65,24 +65,24 @@ public class Board {
      * @param horizontal true if horizontal orientation, false if vertical
      * @return true if block was placed successfully
      */
-    public boolean placeBlock(int row, int col, Entity.Type type, boolean horizontal) { // Was placeFish
+    public boolean placeBlock(int row, int col, Entity.Type type, boolean horizontal) {
         int width, height;
 
         // Determine dimensions based on block type
         switch (type) {
-            case BLOCK_2x1: // Was FISH_2x1
+            case BLOCK_2x1:
                 width = horizontal ? 2 : 1;
                 height = horizontal ? 1 : 2;
                 break;
-            case BLOCK_3x1: // Was FISH_3x1
+            case BLOCK_3x1:
                 width = horizontal ? 3 : 1;
                 height = horizontal ? 1 : 3;
                 break;
-            case BLOCK_4x2: // Was FISH_4x2
+            case BLOCK_4x2:
                 width = horizontal ? 4 : 2;
                 height = horizontal ? 2 : 4;
                 break;
-            case BLOCK_5x1: // Was FISH_5x1
+            case BLOCK_5x1:
                 width = horizontal ? 5 : 1;
                 height = horizontal ? 1 : 5;
                 break;
@@ -90,29 +90,29 @@ public class Board {
                 return false;
         }
 
-        // Check if block is within bounds
+        // check if block is out of board
         if (row + height > SIZE || col + width > SIZE) {
             return false;
         }
 
-        // Check if position is occupied
+        // if there are block , cant paste it
         for (int r = row; r < row + height; r++) {
             for (int c = col; c < col + width; c++) {
-                if (grid[r][c].isBlock()) { // Was isFish
+                if (grid[r][c].isBlock()) {
                     return false;
                 }
             }
         }
 
         // Place the block
-        int blockId = nextBlockId++; // Was fishId
-        int[][] coordinates = new int[width * height][2];
+        int blockId = nextBlockId++;
+        int[][] coordinates = new int[width * height][2]; // keep row,column by size of block
         int index = 0;
 
         for (int r = row; r < row + height; r++) {
             for (int c = col; c < col + width; c++) {
-                grid[r][c].setType(type);
-                grid[r][c].setBlockId(blockId); // Was setFishId
+                grid[r][c].setType(type); // set block type
+                grid[r][c].setBlockId(blockId); // set block id
                 coordinates[index][0] = r;
                 coordinates[index][1] = c;
                 index++;
@@ -149,7 +149,7 @@ public class Board {
         }
 
         // Check if the block is now sunk
-        int blockId = targetEntity.getBlockId(); // Was getFishId
+        int blockId = targetEntity.getBlockId();
         boolean allHit = true;
 
         // Check if all parts of the block are hit
@@ -165,7 +165,7 @@ public class Board {
             for (int[] coord : blockCoordinates.get(blockId)) {
                 grid[coord[0]][coord[1]].setSunk(true);
             }
-            sunkBlocks++; // Was sunkFish
+            sunkBlocks++;
             return 2; // Hit and sink
         }
 
@@ -177,7 +177,7 @@ public class Board {
      * 
      * @return true if all blocks are sunk
      */
-    public boolean allBlocksSunk() { // Was allFishSunk
+    public boolean allBlocksSunk() {
         return sunkBlocks >= totalBlocks && totalBlocks > 0;
     }
 
@@ -186,7 +186,7 @@ public class Board {
      * 
      * @return Number of blocks that are not sunk
      */
-    public int getRemainingBlocks() { // Was getRemainingFish
+    public int getRemainingBlocks() {
         return totalBlocks - sunkBlocks;
     }
 
@@ -210,39 +210,39 @@ public class Board {
      * 
      * @return The next block ID
      */
-    public int getNextBlockId() { // Was getNextFishId
+    public int getNextBlockId() {
         return nextBlockId;
     }
 
     /**
      * Increment the total number of blocks on the board
      */
-    public void incrementTotalBlocks() { // Was incrementTotalFish
+    public void incrementTotalBlocks() {
         totalBlocks++;
     }
 
-    public int getTotalBlocks() { // Was getTotalFish
+    public int getTotalBlocks() {
         return totalBlocks;
     }
 
     /**
      * Set the total number of blocks on the board
      */
-    public void setTotalBlocks(int count) { // Was setTotalFish
+    public void setTotalBlocks(int count) {
         totalBlocks = count;
     }
 
     /**
      * Get the number of sunk blocks
      */
-    public int getSunkBlocks() { // Was getSunkFish
+    public int getSunkBlocks() {
         return sunkBlocks;
     }
 
     /**
      * Increment the number of sunk blocks
      */
-    public void incrementSunkBlocks() { // Was incrementSunkFish
+    public void incrementSunkBlocks() {
         sunkBlocks++;
     }
 }
