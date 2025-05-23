@@ -569,8 +569,6 @@ public class GameClient extends Application {
 
                 if (result.equals("SINK")) {
                     entity.setSunk(true);
-                    // Now when we mark adjacent cells, we'll use this tempBlockId
-                    markAdjacentCellsAsSunk(row, col, false);
 
                     // Additional alert for sinking a block
                     showAlert("Block Sunk!", "You sunk an opponent's block!");
@@ -587,7 +585,6 @@ public class GameClient extends Application {
                 entity.hit();
 
                 if (result.equals("SINK")) {
-                    markAllCellsOfBlockAsSunk(entity.getBlockId());
 
                     // Notify the player that their block was sunk
                     showAlert("Block Lost!", "Your opponent sunk one of your blocks!");
@@ -662,62 +659,6 @@ public class GameClient extends Application {
             for (int col = 0; col < Board.SIZE; col++) {
                 Entity entity = board.getEntity(row, col);
                 updateCell(isMyBoard, row, col, entity);
-            }
-        }
-    }
-
-    /**
-     * Mark adjacent cells as part of a sunk block
-     * 
-     * @param row       Starting row
-     * @param col       Starting column
-     * @param isMyBoard true if player's board, false for opponent's board
-     */
-    private void markAdjacentCellsAsSunk(int row, int col, boolean isMyBoard) {
-        Board board = isMyBoard ? myBoard : opponentBoard;
-        Entity entity = board.getEntity(row, col);
-        int blockId = entity.getBlockId();
-
-        // Only continue if this is a valid block cell
-        if (!entity.isBlock() || blockId <= 0)
-            return;
-
-        // Check all directions for hit cells and mark them as sunk
-        int[][] directions = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
-
-        for (int[] dir : directions) {
-            int newRow = row + dir[0];
-            int newCol = col + dir[1];
-
-            if (board.isValidCoordinate(newRow, newCol)) {
-                Entity adjacent = board.getEntity(newRow, newCol);
-                // Only mark as sunk if it's the same block (same blockId)
-                if (adjacent.isHit() && adjacent.isBlock() && !adjacent.isSunk() &&
-                // For opponent board, we don't know blockId so we just check if it's hit
-                        (isMyBoard ? adjacent.getBlockId() == blockId : true)) {
-
-                    adjacent.setSunk(true);
-                    updateCell(isMyBoard, newRow, newCol, adjacent);
-                    // Recursively mark connected cells
-                    markAdjacentCellsAsSunk(newRow, newCol, isMyBoard);
-                }
-            }
-        }
-    }
-
-    /**
-     * Mark all cells of a block as sunk
-     * 
-     * @param blockId The ID of the block to mark as sunk
-     */
-    private void markAllCellsOfBlockAsSunk(int blockId) {
-        for (int row = 0; row < Board.SIZE; row++) {
-            for (int col = 0; col < Board.SIZE; col++) {
-                Entity entity = myBoard.getEntity(row, col);
-                if (entity.getBlockId() == blockId) {
-                    entity.setSunk(true);
-                    updateCell(true, row, col, entity);
-                }
             }
         }
     }
