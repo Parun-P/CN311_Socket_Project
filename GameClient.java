@@ -317,7 +317,7 @@ public class GameClient extends Application {
             // My board: show blocks
             if (entity.isBlock()) {
                 if (entity.isHit()) {
-                    cell.setFill(Color.DARKRED); // Sunk
+                    cell.setFill(Color.DARKRED);
                 } else {
                     switch (entity.getType()) {
                         case BLOCK_2x1:
@@ -424,11 +424,11 @@ public class GameClient extends Application {
         }
 
         // Enable/disable Ready button if all blocks are placed
-        int totalRemaining = 0;
+        int totalRemaining = 0; // total block that not place yet
         for (Integer count : blockCounts.values()) {
             totalRemaining += count;
         }
-        readyButton.setDisable(totalRemaining > 0);
+        readyButton.setDisable(totalRemaining > 0); // place all block , ready button enable
     }
 
     /**
@@ -529,7 +529,7 @@ public class GameClient extends Application {
             }
             myBoard.incrementTotalBlocks();
 
-            updateBlockCount(selectedType, true);
+            updateBlockCount(selectedType, true); // update block count on radio
             refreshBoard(true);
             statusText.setText("Block placed successfully!");
         } else if (message.equals("INVALID_PLACEMENT")) {

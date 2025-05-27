@@ -1,10 +1,7 @@
-/**
- * Represents an entity on the game board (empty space or block part).
- */
+
+//  Represents an entity on the game board (empty space or block part)
+
 public class Entity {
-    /**
-     * Possible entity types on the board
-     */
     public enum Type {
         EMPTY,
         BLOCK_2x1,
@@ -18,9 +15,7 @@ public class Entity {
     private int blockId; // ID of the block this entity belongs to
     private boolean isSunk; // Whether the block is completely sunk
 
-    /**
-     * Create a new entity (initially empty)
-     */
+    // Create a new entity (initially empty)
     public Entity() {
         this.type = Type.EMPTY;
         this.isHit = false;
@@ -28,95 +23,58 @@ public class Entity {
         this.isSunk = false;
     }
 
-    /**
-     * Set the type of this entity
-     * 
-     * @param type The type to set
-     */
+    // Set the type of this entity
     public void setType(Type type) {
         this.type = type;
     }
 
-    /**
-     * Get the type of this entity
-     * 
-     * @return The entity type
-     */
+    // Get the type of this entity
     public Type getType() {
         return type;
     }
 
-    /**
-     * Check if this entity is hit
-     * 
-     * @return true if hit, false otherwise
-     */
+    // Check if this entity is hit
+    // return true if hit, false otherwise
     public boolean isHit() {
         return isHit;
     }
 
-    /**
-     * Mark this entity as hit
-     * 
-     * @return true if a block was hit, false if empty cell
-     */
+    // Mark this entity as hit
+    // return true if a block was hit, false if empty cell
     public boolean hit() {
         this.isHit = true;
         return type != Type.EMPTY;
     }
 
-    /**
-     * Check if this entity is part of a block
-     * 
-     * @return true if entity is a block part, false otherwise
-     */
+    // Check if this entity is part of a block
+    // return true if entity is a block part, false otherwise
     public boolean isBlock() {
         return type != Type.EMPTY;
     }
 
-    /**
-     * Set whether this block entity is sunk
-     * 
-     * @param sunk true if the block is completely sunk
-     */
+    // Set whether this block entity is sunk
+    // param sunk true if the block is completely sunk
+
     public void setSunk(boolean sunk) {
         this.isSunk = sunk;
     }
 
-    /**
-     * Check if this entity is part of a sunk block
-     * 
-     * @return true if entity is part of a completely sunk block
-     */
+    // Check if this entity is part of a sunk block
+    // return true if entity is part of a completely sunk block
     public boolean isSunk() {
         return isSunk;
     }
 
-    /**
-     * Set the block ID for this entity
-     * 
-     * @param id The block ID this entity belongs to
-     */
+    // Set the block ID for this entity
+    // param id The block ID this entity belongs to
     public void setBlockId(int id) {
         this.blockId = id;
     }
 
-    /**
-     * Get the block ID this entity belongs to
-     * 
-     * @return The block ID
-     */
+    // Get the block ID this entity belongs to
+    // return The block ID
     public int getBlockId() {
         return blockId;
     }
 
-    /**
-     * Reset this entity to empty state
-     */
-    public void reset() {
-        this.type = Type.EMPTY;
-        this.isHit = false;
-        this.blockId = -1;
-        this.isSunk = false;
-    }
 }

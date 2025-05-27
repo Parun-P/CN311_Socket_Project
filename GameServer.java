@@ -3,10 +3,9 @@ import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Server for the Block Battle game.
- * Manages connections and game flow between two clients.
- */
+//  Server for the Block Battle game.
+//  Manages connections and game flow between two clients.
+
 public class GameServer {
     private static final int PORT = 8080;
     private ServerSocket serverSocket;
@@ -15,9 +14,7 @@ public class GameServer {
     private Socket player2;
     private GameState gameState;
 
-    /**
-     * Class to hold the current game state
-     */
+    // Class to hold the current game state
     private static class GameState {
         Board[] boards;
         int currentPlayer;
@@ -34,9 +31,7 @@ public class GameServer {
         }
     }
 
-    /**
-     * Start the game server
-     */
+    // Start the game server
     public void start() {
         try {
             serverSocket = new ServerSocket(PORT);
@@ -61,9 +56,7 @@ public class GameServer {
         }
     }
 
-    /**
-     * Handles communication with a player
-     */
+    // Handles communication with a player
     private class PlayerHandler implements Runnable {
         private Socket socket;
         private int playerId;
@@ -119,11 +112,8 @@ public class GameServer {
             }
         }
 
-        /**
-         * Handle commands from the client
-         * 
-         * @param command The command string to process
-         */
+        // Handle commands from the client
+        // param command The command string to process
         private void handleCommand(String command) {
             System.out.println("Player " + (playerId + 1) + " sent: " + command);
 
@@ -175,17 +165,12 @@ public class GameServer {
                             broadcastToAll("TURN " + (gameState.currentPlayer + 1));
                         }
                     }
-                } else {
-                    out.println("NOT_YOUR_TURN");
                 }
             }
         }
 
-        /**
-         * Send message to all connected players
-         * 
-         * @param message The message to broadcast
-         */
+        // Send message to all connected players
+        // param message The message to broadcast
         private void broadcastToAll(String message) {
             try {
                 if (player1 != null && !player1.isClosed()) {
@@ -203,9 +188,7 @@ public class GameServer {
         }
     }
 
-    /**
-     * Main method to start the server
-     */
+    // Main method to start the server
     public static void main(String[] args) {
         GameServer server = new GameServer();
         server.start();

@@ -1,9 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Represents a player's game board.
- */
+//  Represents a player's game board.
 public class Board {
     public static final int SIZE = 10; // Board size (10x10)
 
@@ -13,9 +11,7 @@ public class Board {
     private int totalBlocks; // Total number of blocks on the board
     private int sunkBlocks; // Number of sunk blocks
 
-    /**
-     * Create a new empty board
-     */
+    // Create a new empty board
     public Board() {
         grid = new Entity[SIZE][SIZE];
         blockCoordinates = new ArrayList<>();
@@ -31,13 +27,20 @@ public class Board {
         }
     }
 
-    /**
-     * Get the entity at the specified coordinates
-     * 
-     * @param row Row index
-     * @param col Column index
-     * @return The entity at the specified position
-     */
+    // Check if the coordinates are valid
+    // param row Row index
+    // param col Column index
+    // return true if coordinates are within bounds
+
+    public boolean isValidCoordinate(int row, int col) {
+        return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
+    }
+
+    // Get the entity at the specified coordinates
+    // param row Row index
+    // param col Column index
+    // return The entity at the specified position
+
     public Entity getEntity(int row, int col) {
         if (isValidCoordinate(row, col)) {
             return grid[row][col];
@@ -45,26 +48,13 @@ public class Board {
         return null;
     }
 
-    /**
-     * Check if the coordinates are valid
-     * 
-     * @param row Row index
-     * @param col Column index
-     * @return true if coordinates are within bounds
-     */
-    public boolean isValidCoordinate(int row, int col) {
-        return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
-    }
+    // Try to place a block on the board
+    // param row Starting row
+    // param col Starting column
+    // param type Type of block
+    // param horizontal true if horizontal orientation, false if vertical
+    // return true if block was placed successfully
 
-    /**
-     * Try to place a block on the board
-     * 
-     * @param row        Starting row
-     * @param col        Starting column
-     * @param type       Type of block
-     * @param horizontal true if horizontal orientation, false if vertical
-     * @return true if block was placed successfully
-     */
     public boolean placeBlock(int row, int col, Entity.Type type, boolean horizontal) {
         int width, height;
 
@@ -124,13 +114,10 @@ public class Board {
         return true;
     }
 
-    /**
-     * Apply an attack to the board
-     * 
-     * @param row Row to attack
-     * @param col Column to attack
-     * @return 0 if miss, 1 if hit, 2 if hit & sink
-     */
+    // Apply an attack to the board
+    // param row Row to attack
+    // param col Column to attack
+    // return 0 if miss, 1 if hit, 2 if hit & sink
     public int applyAttack(int row, int col) {
         if (!isValidCoordinate(row, col)) {
             return 0; // Miss (invalid coordinate)
@@ -172,77 +159,20 @@ public class Board {
         return 1; // Hit only
     }
 
-    /**
-     * Check if all blocks on this board are sunk
-     * 
-     * @return true if all blocks are sunk
-     */
+    // Check if all blocks on this board are sunk
+    // return true if all blocks are sunk
     public boolean allBlocksSunk() {
         return sunkBlocks >= totalBlocks && totalBlocks > 0;
     }
 
-    /**
-     * Get the number of remaining blocks
-     * 
-     * @return Number of blocks that are not sunk
-     */
-    public int getRemainingBlocks() {
-        return totalBlocks - sunkBlocks;
-    }
-
-    /**
-     * Reset the board to empty state
-     */
-    public void reset() {
-        for (int row = 0; row < SIZE; row++) {
-            for (int col = 0; col < SIZE; col++) {
-                grid[row][col].reset();
-            }
-        }
-        blockCoordinates.clear();
-        nextBlockId = 0;
-        totalBlocks = 0;
-        sunkBlocks = 0;
-    }
-
-    /**
-     * Get the next available block ID
-     * 
-     * @return The next block ID
-     */
+    // Get the next available block ID
+    // return The next block ID
     public int getNextBlockId() {
         return nextBlockId;
     }
 
-    /**
-     * Increment the total number of blocks on the board
-     */
+    // Increment the total number of blocks on the board
     public void incrementTotalBlocks() {
         totalBlocks++;
-    }
-
-    public int getTotalBlocks() {
-        return totalBlocks;
-    }
-
-    /**
-     * Set the total number of blocks on the board
-     */
-    public void setTotalBlocks(int count) {
-        totalBlocks = count;
-    }
-
-    /**
-     * Get the number of sunk blocks
-     */
-    public int getSunkBlocks() {
-        return sunkBlocks;
-    }
-
-    /**
-     * Increment the number of sunk blocks
-     */
-    public void incrementSunkBlocks() {
-        sunkBlocks++;
     }
 }
