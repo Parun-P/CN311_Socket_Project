@@ -16,10 +16,8 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Client application for the Block Battle game.
- * Provides GUI and handles communication with the server.
- */
+//  Client application for the Block Battle game.
+//  Provides GUI and handles communication with the server.
 public class GameClient extends Application {
     // GUI components
     private GridPane myBoardGrid;
@@ -212,13 +210,9 @@ public class GameClient extends Application {
         new Thread(this::receiveMessages).start();
     }
 
-    /**
-     * Create a 10x10 grid for game board
-     * 
-     * @param isMyBoard true if this is the player's board, false for opponent's
-     *                  board
-     * @return The created grid pane
-     */
+    // Create a 10x10 grid for game board
+    // param isMyBoard true if this is the player's board, false for opponent'sboard
+    // return The created grid pane
     private GridPane createBoard(boolean isMyBoard) {
         GridPane grid = new GridPane();
         grid.setHgap(2);
@@ -257,12 +251,9 @@ public class GameClient extends Application {
         return grid;
     }
 
-    /**
-     * Place a block on the board
-     * 
-     * @param row Row index
-     * @param col Column index
-     */
+    // Place a block on the board
+    // param row Row index
+    // param col Column index
     private void placeBlock(int row, int col) {
         Entity.Type selectedType = (Entity.Type) blockTypeGroup.getSelectedToggle().getUserData();
         Boolean horizontal = (Boolean) orientationGroup.getSelectedToggle().getUserData();
@@ -283,12 +274,9 @@ public class GameClient extends Application {
         out.println("PLACE_BLOCK " + row + " " + col + " " + selectedType + " " + horizontal);
     }
 
-    /**
-     * Attack a cell on the opponent's board
-     * 
-     * @param row Row index
-     * @param col Column index
-     */
+    // Attack a cell on the opponent's board
+    // param row Row index
+    // param col Column index
     private void attackCell(int row, int col) {
         // Check if cell was already hit
         if (opponentBoard.getEntity(row, col).isHit()) {
@@ -301,14 +289,12 @@ public class GameClient extends Application {
         myTurn = false; // Disable further attacks until turn comes back
     }
 
-    /**
-     * Update the visual representation of a cell
-     * 
-     * @param isMyBoard true if updating player's board, false for opponent's board
-     * @param row       Row index
-     * @param col       Column index
-     * @param entity    The entity to display
-     */
+    // Update the visual representation of a cell
+    // param isMyBoard true if updating player's board, false for opponent's board
+    // param row Row index
+    // param col Column index
+    // param entity The entity to display
+
     private void updateCell(boolean isMyBoard, int row, int col, Entity entity) {
         GridPane grid = isMyBoard ? myBoardGrid : opponentBoardGrid;
         Rectangle cell = (Rectangle) grid.getChildren().get(row * Board.SIZE + col);
@@ -355,9 +341,7 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Connect to the game server
-     */
+    // Connect to the game server
     private void connectToServer() {
         try {
             socket = new Socket(HOST, PORT);
@@ -371,11 +355,8 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Show error dialog and exit the application
-     * 
-     * @param message Error message to display
-     */
+    // Show error dialog and exit the application
+    // param message Error message to display
     private void showErrorAndExit(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -387,9 +368,7 @@ public class GameClient extends Application {
         });
     }
 
-    /**
-     * Disable placement controls when ready
-     */
+    // Disable placement controls when ready
     private void disablePlacementControls() {
         readyButton.setDisable(true);
         for (Toggle toggle : blockTypeGroup.getToggles()) {
@@ -400,12 +379,9 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Update block count UI
-     * 
-     * @param type     Block type
-     * @param decrease true to decrease count, false to increase
-     */
+    // Update block count UI
+    // param type Block type
+    // param decrease true to decrease count, false to increase
     private void updateBlockCount(Entity.Type type, boolean decrease) {
         if (decrease) {
             blockCounts.put(type, blockCounts.get(type) - 1);
@@ -431,12 +407,9 @@ public class GameClient extends Application {
         readyButton.setDisable(totalRemaining > 0); // place all block , ready button enable
     }
 
-    /**
-     * Get display name for block type
-     * 
-     * @param type Block type
-     * @return String representation of block type
-     */
+    // Get display name for block type
+    // param type Block type
+    // return String representation of block type
     private String getTypeName(Entity.Type type) {
         switch (type) {
             case BLOCK_2x1:
@@ -452,9 +425,7 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Receive and process messages from the server
-     */
+    // Receive and process messages from the server
     private void receiveMessages() {
         try {
             String line;
@@ -470,11 +441,8 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Process incoming server messages
-     * 
-     * @param message The message from server
-     */
+    // Process incoming server messages
+    // param message The message from server
     private void processServerMessage(String message) {
         System.out.println("Server: " + message);
 
@@ -614,11 +582,8 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Show game over dialog with win/lose message
-     * 
-     * @param isWinner true if player won, false if player lost
-     */
+    // Show game over dialog with win/lose message
+    // param isWinner true if player won, false if player lost
     private void showGameOverDialog(boolean isWinner) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
@@ -633,12 +598,9 @@ public class GameClient extends Application {
         alert.showAndWait();
     }
 
-    /**
-     * Show alert dialog
-     * 
-     * @param title   Dialog title
-     * @param message Message to display
-     */
+    // Show alert dialog
+    // param title Dialog title
+    // param message Message to display
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -647,11 +609,8 @@ public class GameClient extends Application {
         alert.showAndWait();
     }
 
-    /**
-     * Refresh the visual representation of the board
-     * 
-     * @param isMyBoard true to refresh player's board, false for opponent's board
-     */
+    // Refresh the visual representation of the board
+    // param isMyBoard true to refresh player's board, false for opponent's board
     private void refreshBoard(boolean isMyBoard) {
         Board board = isMyBoard ? myBoard : opponentBoard;
 
@@ -663,9 +622,7 @@ public class GameClient extends Application {
         }
     }
 
-    /**
-     * Main method to launch the application
-     */
+    // Main method to launch the application
     public static void main(String[] args) {
         launch(args);
     }
