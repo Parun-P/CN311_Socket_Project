@@ -146,6 +146,7 @@ public class GameServer {
                         if (gameState.boards[opponentId].allBlocksSunk()) {
                             gameState.gameOver = true;
                             broadcastToAll("GAME_OVER " + (playerId + 1));
+                            System.out.println("GAME_OVER : PlAYER " + (playerId + 1) + " WIN!");
                         } else {
                             // Switch turn
                             gameState.currentPlayer = opponentId;
