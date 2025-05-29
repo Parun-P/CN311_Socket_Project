@@ -12,7 +12,7 @@ public class Entity {
     private int blockId;
     private boolean isSunk;
 
-    // สร้าง Entity เริ่มต้น
+    // Create Initial Entity
     public Entity() {
         this.type = Type.EMPTY;
         this.isHit = false;
@@ -32,13 +32,13 @@ public class Entity {
         return isHit;
     }
 
-    // กำหนดให้ Entity ถูก hit
+    // Entity was hit
     public boolean hit() {
         this.isHit = true;
-        return type != Type.EMPTY; // return true ถ้าตีโดน false ถ้าตีไม่โดน
+        return type != Type.EMPTY; // return true if hit false miss
     }
 
-    // Check ว่า Entity เป็นส่วนหนึ่งของ block
+    // Check if Entity is a part of block
     public boolean isBlock() {
         return type != Type.EMPTY;
     }

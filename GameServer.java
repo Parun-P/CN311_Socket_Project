@@ -50,7 +50,7 @@ public class GameServer {
         }
     }
 
-    // Handles การสื่อสารกับ client
+    // Handles communication with client
     private class PlayerHandler implements Runnable {
         private Socket socket;
         private int playerId;
@@ -65,7 +65,7 @@ public class GameServer {
 
                 this.out = new PrintWriter(socket.getOutputStream(), true);
 
-                // ส่ง player id ไปให้ client แต่ละคน
+                // Send player ID to client
                 out.println("PLAYER " + (playerId + 1));
 
             } catch (IOException e) {
@@ -89,7 +89,7 @@ public class GameServer {
                     System.err.println("Error closing socket: " + e.getMessage());
                 }
 
-                // เมื่อ player disconnect จะทำการแจ้งเตือนผู้เล่นอีกผ่าย
+                // If a player disconnects, notify the other player
                 Socket otherSocket = (playerId == 0) ? player2 : player1;
                 if (otherSocket != null && !otherSocket.isClosed()) {
                     try {
@@ -123,7 +123,7 @@ public class GameServer {
                 gameState.playersReady[playerId] = true;
 
                 if (gameState.playersReady[0] && gameState.playersReady[1]) {
-                    // player 0 เริ่มก่อน
+                    // player 0 start first
                     broadcastToAll("GAME_START");
                     broadcastToAll("TURN 1");
                 }
@@ -135,19 +135,19 @@ public class GameServer {
                         int row = Integer.parseInt(parts[1]);
                         int col = Integer.parseInt(parts[2]);
 
-                        // โจมตี board ฝั่งตรงข้าม
+                        // Apply attack to opponent's board
                         int opponentId = (playerId == 0) ? 1 : 0;
                         int result = gameState.boards[opponentId].applyAttack(row, col);
 
                         String resultType = (result == 0) ? "MISS" : (result == 1) ? "HIT" : "SINK"; // 0:MISS,1:HIT,2:SINK
                         broadcastToAll("ATTACK_RESULT " + (playerId + 1) + " " + row + " " + col + " " + resultType);
 
-                        // มีคนชนะ
+                        // Check win condition
                         if (gameState.boards[opponentId].allBlocksSunk()) {
                             gameState.gameOver = true;
                             broadcastToAll("GAME_OVER " + (playerId + 1));
                         } else {
-                            // เปลี่ยน turn
+                            // Switch turn
                             gameState.currentPlayer = opponentId;
                             broadcastToAll("TURN " + (gameState.currentPlayer + 1));
                         }

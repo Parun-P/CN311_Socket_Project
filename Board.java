@@ -5,12 +5,12 @@ public class Board {
     public static final int SIZE = 10;
 
     private Entity[][] grid;
-    private List<int[][]> blockCoordinates; // เก็บตำแหน่ง block ที่อยู่ใน board
+    private List<int[][]> blockCoordinates; // List of coordinates for each block
     private int nextBlockId;
     private int totalBlocks;
     private int sunkBlocks;
 
-    // สร้าง board เปล่า
+    // Create a new empty board
     public Board() {
         grid = new Entity[SIZE][SIZE];
         blockCoordinates = new ArrayList<>();
@@ -60,12 +60,12 @@ public class Board {
                 return false;
         }
 
-        // check ว่า block เลย board ไหม
+        // check if block is out of board
         if (row + height > SIZE || col + width > SIZE) {
             return false;
         }
 
-        // check ว่าถ้ามี block อื่นจะวางไม่ได้
+        // if there are block , cant paste it
         for (int r = row; r < row + height; r++) {
             for (int c = col; c < col + width; c++) {
                 if (grid[r][c].isBlock()) {
@@ -93,7 +93,7 @@ public class Board {
         return true;
     }
 
-    // โจมตี โดย return 0 : Miss ,1 : Hit ,2 : Sink และ Hit
+    // return 0 if miss, 1 if hit, 2 if hit & sink
     public int applyAttack(int row, int col) {
         if (!isValidCoordinate(row, col)) {
             return 0;
@@ -121,7 +121,7 @@ public class Board {
             }
         }
 
-        // ถ้า block sunk
+        // If block sunk
         if (allHit) {
             for (int[] coord : blockCoordinates.get(blockId)) {
                 grid[coord[0]][coord[1]].setSunk(true);

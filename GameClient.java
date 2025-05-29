@@ -68,7 +68,7 @@ public class GameClient extends Application {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(20));
 
-        // section บน - Status
+        // Top section - Status
         VBox topSection = new VBox(10);
         topSection.setAlignment(Pos.CENTER);
 
@@ -81,7 +81,7 @@ public class GameClient extends Application {
         topSection.getChildren().addAll(statusText, remainingBlocksText);
         root.setTop(topSection);
 
-        // section กลาง - Game boards
+        // Center section - Game boards
         HBox boardsContainer = new HBox(50);
         boardsContainer.setAlignment(Pos.CENTER);
 
@@ -108,12 +108,12 @@ public class GameClient extends Application {
         boardsContainer.getChildren().addAll(myBoardContainer, opponentBoardContainer);
         root.setCenter(boardsContainer);
 
-        // section ล่าง
+        // Bottom section
         VBox controlsContainer = new VBox(15);
         controlsContainer.setAlignment(Pos.CENTER);
         controlsContainer.setPadding(new Insets(20, 0, 0, 0));
 
-        // ตัวเลือกชนิด block
+        // Block type selection
         HBox blockTypeContainer = new HBox(10);
         blockTypeContainer.setAlignment(Pos.CENTER);
 
@@ -140,7 +140,7 @@ public class GameClient extends Application {
         blockTypeContainer.getChildren().addAll(
                 blockTypeLabel, block2x1Button, block3x1Button, block4x2Button, block5x1Button);
 
-        // ตัวเลือกทิศทาง block
+        // Orientation selection
         HBox orientationContainer = new HBox(10);
         orientationContainer.setAlignment(Pos.CENTER);
 
@@ -158,7 +158,7 @@ public class GameClient extends Application {
 
         orientationContainer.getChildren().addAll(orientationLabel, horizontalButton, verticalButton);
 
-        // ปุ่ม Ready
+        // Ready button
         readyButton = new Button("Ready");
         readyButton.setDisable(true);
         readyButton.setOnAction(e -> {
@@ -194,7 +194,7 @@ public class GameClient extends Application {
         });
         primaryStage.show();
 
-        // เริ่มทำงานของ thread
+        // Thread start
         new Thread(this::receiveMessages).start();
     }
 
@@ -248,7 +248,7 @@ public class GameClient extends Application {
         lastPlacementType = selectedType;
         lastPlacementHorizontal = horizontal;
 
-        // ส่ง PLACE_BLOCK... ไปให้ server
+        // send PLACE_BLOCK... to server
         out.println("PLACE_BLOCK " + row + " " + col + " " + selectedType + " " + horizontal);
     }
 
@@ -308,7 +308,7 @@ public class GameClient extends Application {
         }
     }
 
-    // เชื่อมต่อกับ server
+    // Connected to server
     private void connectToServer() {
         try {
             socket = new Socket(HOST, PORT);
@@ -364,7 +364,7 @@ public class GameClient extends Application {
         for (Integer count : blockCounts.values()) {
             totalRemaining += count;
         }
-        readyButton.setDisable(totalRemaining > 0); // ถ้าวางครบแล้ว จะ enable ปุ่ม ready
+        readyButton.setDisable(totalRemaining > 0); // place all block , ready button enable
     }
 
     private String getTypeName(Entity.Type type) {
@@ -382,7 +382,7 @@ public class GameClient extends Application {
         }
     }
 
-    // รับ message จาก server
+    // Receive and process messages from server
     private void receiveMessages() {
         try {
             String line;
@@ -398,7 +398,7 @@ public class GameClient extends Application {
         }
     }
 
-    // Process message จาก server
+    // Process message from server
     private void processServerMessage(String message) {
         System.out.println("Server: " + message);
 
@@ -437,7 +437,7 @@ public class GameClient extends Application {
                     break;
             }
 
-            // Update type และ block id ต่างๆ ของ cell ที่วาง
+            // Update block type and blockId that already place
             int blockId = myBoard.getNextBlockId();
             for (int r = lastPlacementRow; r < lastPlacementRow + height; r++) {
                 for (int c = lastPlacementCol; c < lastPlacementCol + width; c++) {
@@ -476,7 +476,7 @@ public class GameClient extends Application {
                 entity.hit();
 
                 if (result.equals("HIT") || result.equals("SINK")) {
-                    // Set a blockId ชั่วคราวสำหรับการ track cell ที่ connect กัน
+                    // Set a temporary blockId for tracking connected cell
                     int tempBlockId = 100 + row * Board.SIZE + col;
                     entity.setType(Entity.Type.BLOCK_2x1);
                     entity.setBlockId(tempBlockId);
