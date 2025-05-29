@@ -3,18 +3,14 @@ import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-//  Server for the Block Battle game.
-//  Manages connections and game flow between two clients.
-
 public class GameServer {
     private static final int PORT = 8080;
     private ServerSocket serverSocket;
-    private ExecutorService pool; // threadpool 2
+    private ExecutorService pool;
     private Socket player1;
     private Socket player2;
     private GameState gameState;
 
-    // Class to hold the current game state
     private static class GameState {
         Board[] boards;
         int currentPlayer;
@@ -31,7 +27,6 @@ public class GameServer {
         }
     }
 
-    // Start the game server
     public void start() {
         try {
             serverSocket = new ServerSocket(PORT);
@@ -41,7 +36,6 @@ public class GameServer {
             System.out.println("Block Battle Server started on port " + PORT);
             System.out.println("Waiting for players to connect...");
 
-            // Wait for two players to connect
             player1 = serverSocket.accept();
             System.out.println("Player 1 connected: " + player1.getInetAddress());
             pool.execute(new PlayerHandler(player1, 0));
@@ -56,7 +50,7 @@ public class GameServer {
         }
     }
 
-    // Handles communication with a player
+    // Handles การสื่อสารกับ client
     private class PlayerHandler implements Runnable {
         private Socket socket;
         private int playerId;
@@ -67,14 +61,12 @@ public class GameServer {
             this.socket = socket;
             this.playerId = playerId;
             try {
-                this.in = new BufferedReader(new InputStreamReader(socket.getInputStream())); // create BufferedReader
-                                                                                              // for write out mesage to
-                                                                                              // output stream of socket
-                this.out = new PrintWriter(socket.getOutputStream(), true); // sent data sudenly by dont wait until
-                                                                            // buffer is full
+                this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                // Send player ID to client
-                out.println("PLAYER " + (playerId + 1)); // sent message to player 1 and 2
+                this.out = new PrintWriter(socket.getOutputStream(), true);
+
+                // ส่ง player id ไปให้ client แต่ละคน
+                out.println("PLAYER " + (playerId + 1));
 
             } catch (IOException e) {
                 System.err.println("Error setting up player " + (playerId + 1) + ": " + e.getMessage());
@@ -94,17 +86,17 @@ public class GameServer {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    // Ignore close exceptions
+                    System.err.println("Error closing socket: " + e.getMessage());
                 }
 
-                // If a player disconnects, notify the other player
+                // เมื่อ player disconnect จะทำการแจ้งเตือนผู้เล่นอีกผ่าย
                 Socket otherSocket = (playerId == 0) ? player2 : player1;
                 if (otherSocket != null && !otherSocket.isClosed()) {
                     try {
                         PrintWriter otherOut = new PrintWriter(otherSocket.getOutputStream(), true);
                         otherOut.println("OPPONENT_DISCONNECTED");
                     } catch (IOException e) {
-                        // Ignore if we can't notify
+                        System.err.println("Could not notify opponent disconnection " + e.getMessage());
                     }
                 }
 
@@ -112,8 +104,6 @@ public class GameServer {
             }
         }
 
-        // Handle commands from the client
-        // param command The command string to process
         private void handleCommand(String command) {
             System.out.println("Player " + (playerId + 1) + " sent: " + command);
 
@@ -132,14 +122,12 @@ public class GameServer {
             } else if (command.equals("READY")) {
                 gameState.playersReady[playerId] = true;
 
-                // Check if both players are ready
                 if (gameState.playersReady[0] && gameState.playersReady[1]) {
-                    // Start the game with player 0
+                    // player 0 เริ่มก่อน
                     broadcastToAll("GAME_START");
                     broadcastToAll("TURN 1");
                 }
             } else if (command.startsWith("ATTACK")) {
-                // Only allow attacks if it's this player's turn and game is not over
                 if (gameState.currentPlayer == playerId && !gameState.gameOver) {
                     // Format: ATTACK row col
                     String[] parts = command.split(" ");
@@ -147,20 +135,19 @@ public class GameServer {
                         int row = Integer.parseInt(parts[1]);
                         int col = Integer.parseInt(parts[2]);
 
-                        // Apply attack to opponent's board
+                        // โจมตี board ฝั่งตรงข้าม
                         int opponentId = (playerId == 0) ? 1 : 0;
                         int result = gameState.boards[opponentId].applyAttack(row, col);
 
-                        // Send result to both players
                         String resultType = (result == 0) ? "MISS" : (result == 1) ? "HIT" : "SINK"; // 0:MISS,1:HIT,2:SINK
                         broadcastToAll("ATTACK_RESULT " + (playerId + 1) + " " + row + " " + col + " " + resultType);
 
-                        // Check win condition
+                        // มีคนชนะ
                         if (gameState.boards[opponentId].allBlocksSunk()) {
                             gameState.gameOver = true;
                             broadcastToAll("GAME_OVER " + (playerId + 1));
                         } else {
-                            // Switch turns
+                            // เปลี่ยน turn
                             gameState.currentPlayer = opponentId;
                             broadcastToAll("TURN " + (gameState.currentPlayer + 1));
                         }
@@ -169,8 +156,6 @@ public class GameServer {
             }
         }
 
-        // Send message to all connected players
-        // param message The message to broadcast
         private void broadcastToAll(String message) {
             try {
                 if (player1 != null && !player1.isClosed()) {
@@ -188,7 +173,6 @@ public class GameServer {
         }
     }
 
-    // Main method to start the server
     public static void main(String[] args) {
         GameServer server = new GameServer();
         server.start();

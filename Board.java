@@ -1,17 +1,16 @@
 import java.util.ArrayList;
 import java.util.List;
 
-//  Represents a player's game board.
 public class Board {
-    public static final int SIZE = 10; // Board size (10x10)
+    public static final int SIZE = 10;
 
-    private Entity[][] grid; // 2D grid of entities
-    private List<int[][]> blockCoordinates; // List of coordinates for each block
-    private int nextBlockId; // Next available block ID
-    private int totalBlocks; // Total number of blocks on the board
-    private int sunkBlocks; // Number of sunk blocks
+    private Entity[][] grid;
+    private List<int[][]> blockCoordinates; // เก็บตำแหน่ง block ที่อยู่ใน board
+    private int nextBlockId;
+    private int totalBlocks;
+    private int sunkBlocks;
 
-    // Create a new empty board
+    // สร้าง board เปล่า
     public Board() {
         grid = new Entity[SIZE][SIZE];
         blockCoordinates = new ArrayList<>();
@@ -19,7 +18,6 @@ public class Board {
         totalBlocks = 0;
         sunkBlocks = 0;
 
-        // Initialize all cells as empty entities
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
                 grid[row][col] = new Entity();
@@ -27,19 +25,9 @@ public class Board {
         }
     }
 
-    // Check if the coordinates are valid
-    // param row Row index
-    // param col Column index
-    // return true if coordinates are within bounds
-
     public boolean isValidCoordinate(int row, int col) {
         return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
     }
-
-    // Get the entity at the specified coordinates
-    // param row Row index
-    // param col Column index
-    // return The entity at the specified position
 
     public Entity getEntity(int row, int col) {
         if (isValidCoordinate(row, col)) {
@@ -48,17 +36,9 @@ public class Board {
         return null;
     }
 
-    // Try to place a block on the board
-    // param row Starting row
-    // param col Starting column
-    // param type Type of block
-    // param horizontal true if horizontal orientation, false if vertical
-    // return true if block was placed successfully
-
     public boolean placeBlock(int row, int col, Entity.Type type, boolean horizontal) {
         int width, height;
 
-        // Determine dimensions based on block type
         switch (type) {
             case BLOCK_2x1:
                 width = horizontal ? 2 : 1;
@@ -80,12 +60,12 @@ public class Board {
                 return false;
         }
 
-        // check if block is out of board
+        // check ว่า block เลย board ไหม
         if (row + height > SIZE || col + width > SIZE) {
             return false;
         }
 
-        // if there are block , cant paste it
+        // check ว่าถ้ามี block อื่นจะวางไม่ได้
         for (int r = row; r < row + height; r++) {
             for (int c = col; c < col + width; c++) {
                 if (grid[r][c].isBlock()) {
@@ -94,15 +74,14 @@ public class Board {
             }
         }
 
-        // Place the block
         int blockId = nextBlockId++;
-        int[][] coordinates = new int[width * height][2]; // keep row,column by size of block
+        int[][] coordinates = new int[width * height][2];
         int index = 0;
 
         for (int r = row; r < row + height; r++) {
             for (int c = col; c < col + width; c++) {
-                grid[r][c].setType(type); // set block type
-                grid[r][c].setBlockId(blockId); // set block id
+                grid[r][c].setType(type);
+                grid[r][c].setBlockId(blockId);
                 coordinates[index][0] = r;
                 coordinates[index][1] = c;
                 index++;
@@ -114,13 +93,10 @@ public class Board {
         return true;
     }
 
-    // Apply an attack to the board
-    // param row Row to attack
-    // param col Column to attack
-    // return 0 if miss, 1 if hit, 2 if hit & sink
+    // โจมตี โดย return 0 : Miss ,1 : Hit ,2 : Sink และ Hit
     public int applyAttack(int row, int col) {
         if (!isValidCoordinate(row, col)) {
-            return 0; // Miss (invalid coordinate)
+            return 0;
         }
 
         Entity targetEntity = grid[row][col];
@@ -135,11 +111,9 @@ public class Board {
             return 0; // Miss
         }
 
-        // Check if the block is now sunk
         int blockId = targetEntity.getBlockId();
         boolean allHit = true;
 
-        // Check if all parts of the block are hit
         for (int[] coord : blockCoordinates.get(blockId)) {
             if (!grid[coord[0]][coord[1]].isHit()) {
                 allHit = false;
@@ -147,31 +121,26 @@ public class Board {
             }
         }
 
+        // ถ้า block sunk
         if (allHit) {
-            // Mark all parts of the block as sunk
             for (int[] coord : blockCoordinates.get(blockId)) {
                 grid[coord[0]][coord[1]].setSunk(true);
             }
             sunkBlocks++;
-            return 2; // Hit and sink
+            return 2;
         }
 
-        return 1; // Hit only
+        return 1;
     }
 
-    // Check if all blocks on this board are sunk
-    // return true if all blocks are sunk
     public boolean allBlocksSunk() {
         return sunkBlocks >= totalBlocks && totalBlocks > 0;
     }
 
-    // Get the next available block ID
-    // return The next block ID
     public int getNextBlockId() {
         return nextBlockId;
     }
 
-    // Increment the total number of blocks on the board
     public void incrementTotalBlocks() {
         totalBlocks++;
     }

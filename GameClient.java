@@ -16,10 +16,8 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
-//  Client application for the Block Battle game.
-//  Provides GUI and handles communication with the server.
 public class GameClient extends Application {
-    // GUI components
+    // GUI
     private GridPane myBoardGrid;
     private GridPane opponentBoardGrid;
     private Button readyButton;
@@ -36,23 +34,19 @@ public class GameClient extends Application {
     private boolean placementPhase;
     private Map<Entity.Type, Integer> blockCounts;
 
-    // Remember last placement attempt
     private int lastPlacementRow;
     private int lastPlacementCol;
     private Entity.Type lastPlacementType;
     private boolean lastPlacementHorizontal;
 
-    // Track opponent's block count
     private int opponentRemainingBlocks = 6;
 
-    // Networking
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
     private static final String HOST = "localhost";
     private static final int PORT = 8080;
 
-    // Cell display constants
     private static final int CELL_SIZE = 25;
 
     @Override
@@ -63,21 +57,18 @@ public class GameClient extends Application {
         gameStarted = false;
         myTurn = false;
 
-        // Initialize available block counts
         blockCounts = new HashMap<>();
-        blockCounts.put(Entity.Type.BLOCK_2x1, 2); // 2 blocks of size 2x1
-        blockCounts.put(Entity.Type.BLOCK_3x1, 2); // 2 blocks of size 3x1
-        blockCounts.put(Entity.Type.BLOCK_4x2, 1); // 1 block of size 4x2
-        blockCounts.put(Entity.Type.BLOCK_5x1, 1); // 1 block of size 5x1
+        blockCounts.put(Entity.Type.BLOCK_2x1, 2);
+        blockCounts.put(Entity.Type.BLOCK_3x1, 2);
+        blockCounts.put(Entity.Type.BLOCK_4x2, 1);
+        blockCounts.put(Entity.Type.BLOCK_5x1, 1);
 
-        // Connect to server
         connectToServer();
 
-        // Build GUI
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(20));
 
-        // Top section - Status
+        // section บน - Status
         VBox topSection = new VBox(10);
         topSection.setAlignment(Pos.CENTER);
 
@@ -90,11 +81,10 @@ public class GameClient extends Application {
         topSection.getChildren().addAll(statusText, remainingBlocksText);
         root.setTop(topSection);
 
-        // Center section - Game boards
+        // section กลาง - Game boards
         HBox boardsContainer = new HBox(50);
         boardsContainer.setAlignment(Pos.CENTER);
 
-        // My board
         VBox myBoardContainer = new VBox(10);
         myBoardContainer.setAlignment(Pos.CENTER);
 
@@ -105,7 +95,6 @@ public class GameClient extends Application {
 
         myBoardContainer.getChildren().addAll(myBoardLabel, myBoardGrid);
 
-        // Opponent board
         VBox opponentBoardContainer = new VBox(10);
         opponentBoardContainer.setAlignment(Pos.CENTER);
 
@@ -119,12 +108,12 @@ public class GameClient extends Application {
         boardsContainer.getChildren().addAll(myBoardContainer, opponentBoardContainer);
         root.setCenter(boardsContainer);
 
-        // Bottom section - Controls
+        // section ล่าง
         VBox controlsContainer = new VBox(15);
         controlsContainer.setAlignment(Pos.CENTER);
         controlsContainer.setPadding(new Insets(20, 0, 0, 0));
 
-        // Block type selection
+        // ตัวเลือกชนิด block
         HBox blockTypeContainer = new HBox(10);
         blockTypeContainer.setAlignment(Pos.CENTER);
 
@@ -151,7 +140,7 @@ public class GameClient extends Application {
         blockTypeContainer.getChildren().addAll(
                 blockTypeLabel, block2x1Button, block3x1Button, block4x2Button, block5x1Button);
 
-        // Orientation selection
+        // ตัวเลือกทิศทาง block
         HBox orientationContainer = new HBox(10);
         orientationContainer.setAlignment(Pos.CENTER);
 
@@ -169,7 +158,7 @@ public class GameClient extends Application {
 
         orientationContainer.getChildren().addAll(orientationLabel, horizontalButton, verticalButton);
 
-        // Ready button
+        // ปุ่ม Ready
         readyButton = new Button("Ready");
         readyButton.setDisable(true);
         readyButton.setOnAction(e -> {
@@ -183,14 +172,13 @@ public class GameClient extends Application {
         controlsContainer.getChildren().addAll(blockTypeContainer, orientationContainer, readyButton);
         root.setBottom(controlsContainer);
 
-        // Create scene - Make it responsive to window resizing
+        // Create scene
         Scene scene = new Scene(root);
         primaryStage.setTitle("Block Battle - Connecting...");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
 
-        // Make the boards resize with the window
         boardsContainer.prefWidthProperty().bind(scene.widthProperty().subtract(40));
         boardsContainer.prefHeightProperty().bind(scene.heightProperty().subtract(200));
 
@@ -206,13 +194,10 @@ public class GameClient extends Application {
         });
         primaryStage.show();
 
-        // Start listener thread
+        // เริ่มทำงานของ thread
         new Thread(this::receiveMessages).start();
     }
 
-    // Create a 10x10 grid for game board
-    // param isMyBoard true if this is the player's board, false for opponent'sboard
-    // return The created grid pane
     private GridPane createBoard(boolean isMyBoard) {
         GridPane grid = new GridPane();
         grid.setHgap(2);
@@ -229,14 +214,12 @@ public class GameClient extends Application {
                 final int c = col;
 
                 if (isMyBoard) {
-                    // For my board: place blocks during setup
                     cell.setOnMouseClicked(e -> {
                         if (placementPhase) {
                             placeBlock(r, c);
                         }
                     });
                 } else {
-                    // For opponent board: attack during game
                     cell.setOnMouseClicked(e -> {
                         if (gameStarted && myTurn) {
                             attackCell(r, c);
@@ -251,59 +234,43 @@ public class GameClient extends Application {
         return grid;
     }
 
-    // Place a block on the board
-    // param row Row index
-    // param col Column index
     private void placeBlock(int row, int col) {
         Entity.Type selectedType = (Entity.Type) blockTypeGroup.getSelectedToggle().getUserData();
         Boolean horizontal = (Boolean) orientationGroup.getSelectedToggle().getUserData();
 
-        // Check if we have any blocks of this type left
         if (blockCounts.get(selectedType) <= 0) {
             statusText.setText("No more blocks of this type available");
             return;
         }
 
-        // Store last placement attempt
         lastPlacementRow = row;
         lastPlacementCol = col;
         lastPlacementType = selectedType;
         lastPlacementHorizontal = horizontal;
 
-        // Send placement command to server
+        // ส่ง PLACE_BLOCK... ไปให้ server
         out.println("PLACE_BLOCK " + row + " " + col + " " + selectedType + " " + horizontal);
     }
 
-    // Attack a cell on the opponent's board
-    // param row Row index
-    // param col Column index
+    // Attack opponent's board
     private void attackCell(int row, int col) {
-        // Check if cell was already hit
         if (opponentBoard.getEntity(row, col).isHit()) {
             statusText.setText("You already attacked this position!");
             return;
         }
 
-        // Send attack command to server
         out.println("ATTACK " + row + " " + col);
-        myTurn = false; // Disable further attacks until turn comes back
+        myTurn = false;
     }
-
-    // Update the visual representation of a cell
-    // param isMyBoard true if updating player's board, false for opponent's board
-    // param row Row index
-    // param col Column index
-    // param entity The entity to display
 
     private void updateCell(boolean isMyBoard, int row, int col, Entity entity) {
         GridPane grid = isMyBoard ? myBoardGrid : opponentBoardGrid;
         Rectangle cell = (Rectangle) grid.getChildren().get(row * Board.SIZE + col);
 
         if (isMyBoard) {
-            // My board: show blocks
             if (entity.isBlock()) {
                 if (entity.isHit()) {
-                    cell.setFill(Color.DARKRED);
+                    cell.setFill(Color.DARKRED); // Hit
                 } else {
                     switch (entity.getType()) {
                         case BLOCK_2x1:
@@ -328,20 +295,20 @@ public class GameClient extends Application {
                 cell.setFill(Color.LIGHTBLUE); // Empty
             }
         } else {
-            // Opponent board: hide unhit blocks
+            // Opponent board
             if (entity.isHit()) {
                 if (entity.isBlock()) {
-                    cell.setFill(Color.RED); // Only current hit is marked red
+                    cell.setFill(Color.RED); // Hit
                 } else {
                     cell.setFill(Color.DARKGRAY); // Miss
                 }
             } else {
-                cell.setFill(Color.LIGHTBLUE); // Unknown or empty
+                cell.setFill(Color.LIGHTBLUE); // Empty
             }
         }
     }
 
-    // Connect to the game server
+    // เชื่อมต่อกับ server
     private void connectToServer() {
         try {
             socket = new Socket(HOST, PORT);
@@ -355,8 +322,6 @@ public class GameClient extends Application {
         }
     }
 
-    // Show error dialog and exit the application
-    // param message Error message to display
     private void showErrorAndExit(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -368,7 +333,6 @@ public class GameClient extends Application {
         });
     }
 
-    // Disable placement controls when ready
     private void disablePlacementControls() {
         readyButton.setDisable(true);
         for (Toggle toggle : blockTypeGroup.getToggles()) {
@@ -379,9 +343,6 @@ public class GameClient extends Application {
         }
     }
 
-    // Update block count UI
-    // param type Block type
-    // param decrease true to decrease count, false to increase
     private void updateBlockCount(Entity.Type type, boolean decrease) {
         if (decrease) {
             blockCounts.put(type, blockCounts.get(type) - 1);
@@ -389,7 +350,7 @@ public class GameClient extends Application {
             blockCounts.put(type, blockCounts.get(type) + 1);
         }
 
-        // Update radio button text
+        // Update radio button of select block
         for (Toggle toggle : blockTypeGroup.getToggles()) {
             RadioButton rb = (RadioButton) toggle;
             Entity.Type buttonType = (Entity.Type) rb.getUserData();
@@ -399,17 +360,13 @@ public class GameClient extends Application {
             }
         }
 
-        // Enable/disable Ready button if all blocks are placed
-        int totalRemaining = 0; // total block that not place yet
+        int totalRemaining = 0;
         for (Integer count : blockCounts.values()) {
             totalRemaining += count;
         }
-        readyButton.setDisable(totalRemaining > 0); // place all block , ready button enable
+        readyButton.setDisable(totalRemaining > 0); // ถ้าวางครบแล้ว จะ enable ปุ่ม ready
     }
 
-    // Get display name for block type
-    // param type Block type
-    // return String representation of block type
     private String getTypeName(Entity.Type type) {
         switch (type) {
             case BLOCK_2x1:
@@ -425,7 +382,7 @@ public class GameClient extends Application {
         }
     }
 
-    // Receive and process messages from the server
+    // รับ message จาก server
     private void receiveMessages() {
         try {
             String line;
@@ -441,30 +398,24 @@ public class GameClient extends Application {
         }
     }
 
-    // Process incoming server messages
-    // param message The message from server
+    // Process message จาก server
     private void processServerMessage(String message) {
         System.out.println("Server: " + message);
 
         if (message.startsWith("PLAYER")) {
-            // Set player ID
             playerId = Integer.parseInt(message.split(" ")[1]);
             System.out.println("Assigned player ID: " + playerId);
 
-            // Update the window title with the correct player ID
             Platform.runLater(() -> {
                 Stage stage = (Stage) myBoardGrid.getScene().getWindow();
                 stage.setTitle("Block Battle - Player " + playerId);
             });
         } else if (message.equals("BLOCK_PLACED")) {
-            // Block placement successful
             Entity.Type selectedType = lastPlacementType;
 
-            // Update our local board since the server accepted the placement
             int width = 0;
             int height = 0;
 
-            // Calculate dimensions based on block type and orientation
             switch (selectedType) {
                 case BLOCK_2x1:
                     width = lastPlacementHorizontal ? 2 : 1;
@@ -486,7 +437,7 @@ public class GameClient extends Application {
                     break;
             }
 
-            // Update our local board to reflect the placed block
+            // Update type และ block id ต่างๆ ของ cell ที่วาง
             int blockId = myBoard.getNextBlockId();
             for (int r = lastPlacementRow; r < lastPlacementRow + height; r++) {
                 for (int c = lastPlacementCol; c < lastPlacementCol + width; c++) {
@@ -498,18 +449,15 @@ public class GameClient extends Application {
             myBoard.incrementTotalBlocks();
 
             updateBlockCount(selectedType, true); // update block count on radio
-            refreshBoard(true);
+            refreshBoard(true); // update board UI
             statusText.setText("Block placed successfully!");
         } else if (message.equals("INVALID_PLACEMENT")) {
-            // Block placement failed
             statusText.setText("Invalid block placement! Try again.");
         } else if (message.equals("GAME_START")) {
-            // Game has started
             placementPhase = false;
             gameStarted = true;
             statusText.setText("Game started!");
         } else if (message.startsWith("TURN")) {
-            // Turn notification
             int turnPlayerId = Integer.parseInt(message.split(" ")[1]);
             myTurn = (turnPlayerId == playerId);
             statusText.setText(myTurn ? "Your turn!" : "Opponent's turn");
@@ -524,24 +472,21 @@ public class GameClient extends Application {
             boolean isMyAttack = (attackerId == playerId);
 
             if (isMyAttack) {
-                // My attack on opponent's board
                 Entity entity = opponentBoard.getEntity(row, col);
                 entity.hit();
 
                 if (result.equals("HIT") || result.equals("SINK")) {
-                    // Updated: Set a temporary blockId for tracking connected cells
-                    int tempBlockId = 100 + row * Board.SIZE + col; // Generate unique ID
-                    entity.setType(Entity.Type.BLOCK_2x1); // Default, since we don't know actual type
-                    entity.setBlockId(tempBlockId); // Set temporary block ID
+                    // Set a blockId ชั่วคราวสำหรับการ track cell ที่ connect กัน
+                    int tempBlockId = 100 + row * Board.SIZE + col;
+                    entity.setType(Entity.Type.BLOCK_2x1);
+                    entity.setBlockId(tempBlockId);
                 }
 
                 if (result.equals("SINK")) {
                     entity.setSunk(true);
 
-                    // Additional alert for sinking a block
                     showAlert("Block Sunk!", "You sunk an opponent's block!");
 
-                    // Decrement opponent's block count
                     opponentRemainingBlocks--;
                     remainingBlocksText.setText("Opponent blocks remaining: " + opponentRemainingBlocks);
                 }
@@ -554,7 +499,6 @@ public class GameClient extends Application {
 
                 if (result.equals("SINK")) {
 
-                    // Notify the player that their block was sunk
                     showAlert("Block Lost!", "Your opponent sunk one of your blocks!");
                 }
 
@@ -565,12 +509,10 @@ public class GameClient extends Application {
             int winnerId = Integer.parseInt(message.split(" ")[1]);
             boolean isWinner = (winnerId == playerId);
 
-            // Show a more prominent game over message
             showGameOverDialog(isWinner);
 
             statusText.setText(isWinner ? "You win!" : "You lose!");
 
-            // Disable further interaction
             gameStarted = false;
             myTurn = false;
         } else if (message.equals("OPPONENT_DISCONNECTED")) {
@@ -582,8 +524,6 @@ public class GameClient extends Application {
         }
     }
 
-    // Show game over dialog with win/lose message
-    // param isWinner true if player won, false if player lost
     private void showGameOverDialog(boolean isWinner) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
@@ -598,9 +538,6 @@ public class GameClient extends Application {
         alert.showAndWait();
     }
 
-    // Show alert dialog
-    // param title Dialog title
-    // param message Message to display
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -609,8 +546,6 @@ public class GameClient extends Application {
         alert.showAndWait();
     }
 
-    // Refresh the visual representation of the board
-    // param isMyBoard true to refresh player's board, false for opponent's board
     private void refreshBoard(boolean isMyBoard) {
         Board board = isMyBoard ? myBoard : opponentBoard;
 
@@ -622,7 +557,6 @@ public class GameClient extends Application {
         }
     }
 
-    // Main method to launch the application
     public static void main(String[] args) {
         launch(args);
     }

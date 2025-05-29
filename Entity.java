@@ -1,6 +1,3 @@
-
-//  Represents an entity on the game board (empty space or block part)
-
 public class Entity {
     public enum Type {
         EMPTY,
@@ -10,12 +7,12 @@ public class Entity {
         BLOCK_5x1
     }
 
-    private Type type; // Type of entity (empty or block type)
-    private boolean isHit; // Whether this cell has been hit
-    private int blockId; // ID of the block this entity belongs to
-    private boolean isSunk; // Whether the block is completely sunk
+    private Type type;
+    private boolean isHit;
+    private int blockId;
+    private boolean isSunk;
 
-    // Create a new entity (initially empty)
+    // สร้าง Entity เริ่มต้น
     public Entity() {
         this.type = Type.EMPTY;
         this.isHit = false;
@@ -23,56 +20,41 @@ public class Entity {
         this.isSunk = false;
     }
 
-    // Set the type of this entity
     public void setType(Type type) {
         this.type = type;
     }
 
-    // Get the type of this entity
     public Type getType() {
         return type;
     }
 
-    // Check if this entity is hit
-    // return true if hit, false otherwise
     public boolean isHit() {
         return isHit;
     }
 
-    // Mark this entity as hit
-    // return true if a block was hit, false if empty cell
+    // กำหนดให้ Entity ถูก hit
     public boolean hit() {
         this.isHit = true;
-        return type != Type.EMPTY;
+        return type != Type.EMPTY; // return true ถ้าตีโดน false ถ้าตีไม่โดน
     }
 
-    // Check if this entity is part of a block
-    // return true if entity is a block part, false otherwise
+    // Check ว่า Entity เป็นส่วนหนึ่งของ block
     public boolean isBlock() {
         return type != Type.EMPTY;
     }
-
-    // Set whether this block entity is sunk
-    // param sunk true if the block is completely sunk
 
     public void setSunk(boolean sunk) {
         this.isSunk = sunk;
     }
 
-    // Check if this entity is part of a sunk block
-    // return true if entity is part of a completely sunk block
     public boolean isSunk() {
         return isSunk;
     }
 
-    // Set the block ID for this entity
-    // param id The block ID this entity belongs to
     public void setBlockId(int id) {
         this.blockId = id;
     }
 
-    // Get the block ID this entity belongs to
-    // return The block ID
     public int getBlockId() {
         return blockId;
     }
